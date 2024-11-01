@@ -25,7 +25,7 @@ const appRoutes: Routes = [
   {
     path: loginPath,
     loadComponent: () => import('./component/login/login.component')
-  },
+  }
   {
     path: '**',
     redirectTo: defaultPath
