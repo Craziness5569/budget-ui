@@ -1,5 +1,4 @@
-<ion-menu contentId="main-content" type="overlay">
-  <ion-menu [disabled]="(authService.currentUser() | async) === null">
+<ion-menu contentId="main-content" type="overlay" [disabled]="(authService.currentUser() | async) === null">
     <!-- Navigation List -->
     <ion-content>
       <ion-list id="menu-list">
@@ -24,19 +23,19 @@
       </ion-list>
     </ion-content>
   </ion-menu>
-  <!-- Logout Button -->
-  <ion-footer>
-    <ion-toolbar>
-      <ion-buttons>
-        @if (authService.currentUser() | async) {
-          <ion-button (click)="authService.logout()" color="primary">
-            <ion-icon class="ion-padding-end" name="log-out" />
-            Logout
-          </ion-button>
-        }
-      </ion-buttons>
-    </ion-toolbar>
-  </ion-footer>
+<!-- Logout Button -->
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons>
+      @if (authService.currentUser() | async) {
+        <ion-button (click)="authService.logout()" color="primary">
+          <ion-icon class="ion-padding-end" name="log-out"/>
+          Logout
+        </ion-button>
+      }
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>
   <!-- Router Outlet -->
   <ion-router-outlet id="main-content" />
-</ion-menu>
+

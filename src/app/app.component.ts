@@ -26,7 +26,6 @@ import {
   IonToolbar
 } from '@ionic/angular/standalone';
 import { AuthService } from './shared/service/auth.service';
-
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -59,9 +58,7 @@ import { AuthService } from './shared/service/auth.service';
   ]
 })
 export default class AppComponent {
-  // DI
   readonly authService = inject(AuthService);
-
   readonly appPages = [
     { title: 'Expenses', url: `/${expensesPath}`, icon: 'podium' },
     { title: 'Categories', url: `/${categoriesPath}`, icon: 'pricetag' }
