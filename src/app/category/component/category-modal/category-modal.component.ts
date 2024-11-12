@@ -19,6 +19,8 @@ import { close, save, text, trash } from 'ionicons/icons';
 import { ToastService } from '../../../shared/service/toast.service';
 import { CategoryService } from '../../service/category.service';
 import { LoadingIndicatorService } from '../../../shared/service/loading-indicator.service';
+import { finalize } from 'rxjs/operators';
+import { CategoryUpsertDto } from '../../../shared/domain'; // Import für finalize
 
 @Component({
   selector: 'app-category-modal',
@@ -63,7 +65,19 @@ export default class CategoryModalComponent {
   }
 
   save(): void {
-    this.modalCtrl.dismiss(null, 'save');
+    this.loadingIndicatorService.showLoadingIndicator({ message: 'Saving category' }).subscribe(loadingIndicator => {
+      const category = this.categoryForm.value as CategoryUpsertDto;
+      this.categoryService
+        .upsertCategory(category)
+        .pipe(finalize(() => loadingIndicator.dismiss()))
+        .subscribe({
+          next: () => {
+            this.toastService.displaySuccessToast('Category saved');
+            this.modalCtrl.dismiss(null, 'refresh');
+          },
+          error: error => this.toastService.displayWarningToast('Could not save category', error)
+        });
+    });
   }
 
   delete(): void {
