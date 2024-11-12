@@ -19,6 +19,7 @@ registerLocaleData(locale);
 
 bootstrapApplication(AppComponent, {
   providers: [
+    provideHttpClient(),
     { provide: DEFAULT_CURRENCY_CODE, useValue: 'CHF' },
     { provide: LOCALE_ID, useValue: 'de-CH' },
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
