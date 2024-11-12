@@ -1,41 +1,45 @@
-<ion-menu contentId="main-content" type="overlay" [disabled]="(authService.currentUser() | async) === null">
-    <!-- Navigation List -->
-    <ion-content>
-      <ion-list id="menu-list">
-        <ion-list-header>
-          <ion-label>Budget UI</ion-label>
-          <ion-chip>
-            <ion-avatar>
-              <img [src]="(authService.currentUser() | async)?.photoURL" />
-            </ion-avatar>
-            <ion-label>{{ (authService.currentUser() | async)?.displayName }}</ion-label>
-          </ion-chip>
-        </ion-list-header>
+<ion-app>
+  <ion-split-pane contentId="main-content">
+    <ion-menu contentId="main-content" type="overlay" [disabled]="(authService.currentUser() | async) === null">
+      <!-- Navigation List -->
+      <ion-content>
+        <ion-list id="menu-list">
+          <ion-list-header>
+            <ion-label>Budget UI</ion-label>
+            <ion-chip>
+              <ion-avatar>
+                <img [src]="(authService.currentUser() | async)?.photoURL" />
+              </ion-avatar>
+              <ion-label>{{ (authService.currentUser() | async)?.displayName }}</ion-label>
+            </ion-chip>
+          </ion-list-header>
 
-        @for (page of appPages; track page.title; let i = $index) {
-          <ion-menu-toggle auto-hide="false">
-            <ion-item button routerDirection="root" [routerLink]="[page.url]" lines="none" detail="false" routerLinkActive="selected">
-              <ion-icon slot="start" [name]="page.icon" />
-              <ion-label>{{ page.title }}</ion-label>
-            </ion-item>
-          </ion-menu-toggle>
-        }
-      </ion-list>
-    </ion-content>
-  </ion-menu>
-<!-- Logout Button -->
-<ion-footer>
-  <ion-toolbar>
-    <ion-buttons>
-      @if (authService.currentUser() | async) {
-        <ion-button (click)="authService.logout()" color="primary">
-          <ion-icon class="ion-padding-end" name="log-out"/>
-          Logout
-        </ion-button>
-      }
-    </ion-buttons>
-  </ion-toolbar>
-</ion-footer>
-  <!-- Router Outlet -->
-  <ion-router-outlet id="main-content" />
+          @for (page of appPages; track page.title; let i = $index) {
+            <ion-menu-toggle auto-hide="false">
+              <ion-item button routerDirection="root" [routerLink]="[page.url]" lines="none" detail="false" routerLinkActive="selected">
+                <ion-icon slot="start" [name]="page.icon" />
+                <ion-label>{{ page.title }}</ion-label>
+              </ion-item>
+            </ion-menu-toggle>
+          }
+        </ion-list>
+      </ion-content>
+      <!-- Logout Button -->
+      <ion-footer>
+        <ion-toolbar>
+          <ion-buttons>
+            @if (authService.currentUser() | async) {
+              <ion-button (click)="authService.logout()" color="primary">
+                <ion-icon class="ion-padding-end" name="log-out" />
+                Logout
+              </ion-button>
+            }
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-footer>
+    </ion-menu>
 
+    <!-- Router Outlet -->
+    <ion-router-outlet id="main-content" />
+  </ion-split-pane>
+</ion-app>
