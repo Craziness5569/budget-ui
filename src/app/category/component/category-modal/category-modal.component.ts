@@ -13,7 +13,7 @@ import {
   IonToolbar,
   ModalController
 } from '@ionic/angular/standalone';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { close, save, text, trash } from 'ionicons/icons';
 import { ToastService } from '../../../shared/service/toast.service';
@@ -48,6 +48,11 @@ export default class CategoryModalComponent {
   private readonly loadingIndicatorService = inject(LoadingIndicatorService);
   private readonly modalCtrl = inject(ModalController);
   private readonly toastService = inject(ToastService);
+  // Form Group
+  readonly categoryForm = this.formBuilder.group({
+    id: [null! as string], // hidden
+    name: ['', [Validators.required, Validators.maxLength(40)]]
+  });
   constructor() {
     // Add all used Ionic icons
     addIcons({ close, save, text, trash });
