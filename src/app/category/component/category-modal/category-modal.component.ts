@@ -1,4 +1,4 @@
-import { Component, inject, ProviderToken } from '@angular/core';
+import { Component, inject, ProviderToken, ViewChild } from '@angular/core';
 import {
   IonButton,
   IonButtons,
@@ -11,7 +11,8 @@ import {
   IonItem,
   IonTitle,
   IonToolbar,
-  ModalController
+  ModalController,
+  ViewDidEnter
 } from '@ionic/angular/standalone';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { addIcons } from 'ionicons';
@@ -43,7 +44,7 @@ import { CategoryUpsertDto } from '../../../shared/domain'; // Import für final
     IonFabButton
   ]
 })
-export default class CategoryModalComponent {
+export default class CategoryModalComponent implements ViewDidEnter {
   // DI
   private readonly categoryService = inject(CategoryService);
   private readonly formBuilder = inject(FormBuilder);
@@ -55,11 +56,14 @@ export default class CategoryModalComponent {
     id: [null! as string], // hidden
     name: ['', [Validators.required, Validators.maxLength(40)]]
   });
+  @ViewChild('nameInput') nameInput?: IonInput;
   constructor() {
     // Add all used Ionic icons
     addIcons({ close, save, text, trash });
   }
-
+  ionViewDidEnter(): void {
+    this.nameInput?.setFocus();
+  }
   cancel(): void {
     this.modalCtrl.dismiss(null, 'cancel');
   }
