@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ProviderToken } from '@angular/core';
 import {
   IonButton,
   IonButtons,
@@ -13,9 +13,12 @@ import {
   IonToolbar,
   ModalController
 } from '@ionic/angular/standalone';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { close, save, text, trash } from 'ionicons/icons';
+import { ToastService } from '../../../shared/service/toast.service';
+import { CategoryService } from '../../service/category.service';
+import { LoadingIndicatorService } from '../../../shared/service/loading-indicator.service';
 
 @Component({
   selector: 'app-category-modal',
@@ -40,8 +43,11 @@ import { close, save, text, trash } from 'ionicons/icons';
 })
 export default class CategoryModalComponent {
   // DI
+  private readonly categoryService = inject(CategoryService);
+  private readonly formBuilder = inject(FormBuilder);
+  private readonly loadingIndicatorService = inject(LoadingIndicatorService);
   private readonly modalCtrl = inject(ModalController);
-
+  private readonly toastService = inject(ToastService);
   constructor() {
     // Add all used Ionic icons
     addIcons({ close, save, text, trash });
