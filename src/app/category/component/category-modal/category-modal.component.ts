@@ -14,7 +14,7 @@ import {
   ModalController,
   ViewDidEnter
 } from '@ionic/angular/standalone';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { close, save, text, trash } from 'ionicons/icons';
 import { ToastService } from '../../../shared/service/toast.service';
@@ -47,7 +47,7 @@ import { CategoryUpsertDto } from '../../../shared/domain'; // Import für final
 export default class CategoryModalComponent implements ViewDidEnter {
   // DI
   private readonly categoryService = inject(CategoryService);
-  private readonly formBuilder = inject(FormBuilder);
+  private readonly formBuilder = inject(NonNullableFormBuilder);
   private readonly loadingIndicatorService = inject(LoadingIndicatorService);
   private readonly modalCtrl = inject(ModalController);
   private readonly toastService = inject(ToastService);
