@@ -24,7 +24,8 @@ import {
   IonSkeletonText,
   IonTitle,
   IonToolbar,
-  ModalController
+  ModalController,
+  ViewDidEnter
 } from '@ionic/angular/standalone';
 import { ReactiveFormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
@@ -69,7 +70,7 @@ import { finalize } from 'rxjs/operators';
     IonFabButton
   ]
 })
-export default class CategoryListComponent {
+export default class CategoryListComponent implements ViewDidEnter {
   // DI
   private readonly categoryService = inject(CategoryService);
   private readonly modalCtrl = inject(ModalController);
@@ -92,7 +93,9 @@ export default class CategoryListComponent {
     const { role } = await modal.onWillDismiss();
     console.log('role', role);
   }
-
+  ionViewDidEnter(): void {
+    this.loadCategories();
+  }
   private loadCategories(next?: () => void): void {
     if (!this.searchCriteria.name) delete this.searchCriteria.name;
     this.loading = true;
