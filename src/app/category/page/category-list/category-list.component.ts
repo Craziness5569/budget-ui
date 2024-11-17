@@ -92,7 +92,7 @@ export default class CategoryListComponent implements ViewDidEnter {
     const modal = await this.modalCtrl.create({ component: CategoryModalComponent });
     modal.present();
     const { role } = await modal.onWillDismiss();
-    console.log('role', role);
+    if (role === 'refresh') this.reloadCategories();
   }
   ionViewDidEnter(): void {
     this.loadCategories();
