@@ -32,6 +32,7 @@ import { add, alertCircleOutline, search, swapVertical } from 'ionicons/icons';
 import CategoryModalComponent from '../../component/category-modal/category-modal.component';
 import { ToastService } from '../../../shared/service/toast.service';
 import { CategoryService } from '../../service/category.service';
+import { Category, CategoryCriteria } from '../../../shared/domain';
 
 @Component({
   selector: 'app-category-list',
@@ -73,6 +74,11 @@ export default class CategoryListComponent {
   private readonly modalCtrl = inject(ModalController);
   private readonly toastService = inject(ToastService);
 
+  categories: Category[] | null = null;
+  readonly initialSort = 'name,asc';
+  lastPageReached = false;
+  loading = false;
+  searchCriteria: CategoryCriteria = { page: 0, size: 25, sort: this.initialSort };
   constructor() {
     // Add all used Ionic icons
     addIcons({ swapVertical, search, alertCircleOutline, add });
