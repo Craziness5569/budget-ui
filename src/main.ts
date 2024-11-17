@@ -28,9 +28,10 @@ bootstrapApplication(AppComponent, {
     provideIonicAngular(),
     provideRouter(appRoutes, withPreloading(PreloadAllModules)),
     { provide: FIREBASE_OPTIONS, useValue: environment.firebaseConfig },
-    provideHttpClient(withInterceptors([authInterceptor])), provideServiceWorker('ngsw-worker.js', {
-            enabled: !isDevMode(),
-            registrationStrategy: 'registerWhenStable:30000'
-          })
+    provideHttpClient(withInterceptors([authInterceptor])),
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000'
+    })
   ]
 }).catch(err => console.error(err));
