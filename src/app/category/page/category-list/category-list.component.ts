@@ -35,7 +35,7 @@ import { ToastService } from '../../../shared/service/toast.service';
 import { CategoryService } from '../../service/category.service';
 import { Category, CategoryCriteria } from '../../../shared/domain';
 import { finalize } from 'rxjs/operators';
-import { InfiniteScrollCustomEvent } from '@ionic/angular';
+import { InfiniteScrollCustomEvent, RefresherCustomEvent } from '@ionic/angular';
 
 @Component({
   selector: 'app-category-list',
@@ -120,5 +120,9 @@ export default class CategoryListComponent implements ViewDidEnter {
   loadNextCategoryPage($event: InfiniteScrollCustomEvent) {
     this.searchCriteria.page++;
     this.loadCategories(() => $event.target.complete());
+  }
+  reloadCategories($event?: RefresherCustomEvent): void {
+    this.searchCriteria.page = 0;
+    this.loadCategories(() => $event?.target.complete());
   }
 }
