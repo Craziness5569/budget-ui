@@ -84,6 +84,7 @@ export default class CategoryListComponent implements ViewDidEnter {
   lastPageReached = false;
   loading = false;
   searchCriteria: CategoryCriteria = { page: 0, size: 25, sort: this.initialSort };
+  readonly searchForm = this.formBuilder.group({ name: [''], sort: [this.initialSort] });
   private searchFormSubscription?: Subscription;
   readonly sortOptions: SortOption[] = [
     { label: 'Created at (newest first)', value: 'createdAt,desc' },
