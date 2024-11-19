@@ -1,4 +1,4 @@
-import { Component, inject, ProviderToken, ViewChild } from '@angular/core';
+import { Component, inject, Input, ProviderToken, ViewChild } from '@angular/core';
 import {
   IonButton,
   IonButtons,
@@ -21,7 +21,7 @@ import { ToastService } from '../../../shared/service/toast.service';
 import { CategoryService } from '../../service/category.service';
 import { LoadingIndicatorService } from '../../../shared/service/loading-indicator.service';
 import { finalize } from 'rxjs/operators';
-import { CategoryUpsertDto, SortOption } from '../../../shared/domain';
+import { Category, CategoryUpsertDto, SortOption } from '../../../shared/domain';
 import { Subscription } from 'rxjs';
 import { ActionSheetService } from '../../../shared/service/action-sheet.service'; // Import für finalize
 
@@ -60,6 +60,8 @@ export default class CategoryModalComponent implements ViewDidEnter {
     name: ['', [Validators.required, Validators.maxLength(40)]]
   });
   @ViewChild('nameInput') nameInput?: IonInput;
+  // Passed into the component by the ModalController, available in the ionViewWillEnter
+  @Input() category: Category = {} as Category;
   private searchFormSubscription?: Subscription;
   readonly sortOptions: SortOption[] = [
     { label: 'Created at (newest first)', value: 'createdAt,desc' },
