@@ -5,7 +5,7 @@ import { Expense, ExpenseCriteria, ExpenseUpsertDto, Page } from '../../shared/d
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
-export class ExpensesService {
+export class ExpenseService {
   private readonly httpClient = inject(HttpClient);
 
   private readonly apiUrl = `${environment.backendUrl}/expenses`;
@@ -13,17 +13,17 @@ export class ExpensesService {
 
   // Read
 
-  getCategories = (pagingCriteria: ExpenseCriteria): Observable<Page<Expense>> =>
+  getExpenses = (pagingCriteria: ExpenseCriteria): Observable<Page<Expense>> =>
     this.httpClient.get<Page<Expense>>(this.apiUrl, { params: new HttpParams({ fromObject: { ...pagingCriteria } }) });
 
-  getAllCategories = (sortCriteria: ExpenseCriteria): Observable<Expense[]> =>
+  getAllExpenses = (sortCriteria: ExpenseCriteria): Observable<Expense[]> =>
     this.httpClient.get<Expense[]>(this.apiV2Url, { params: new HttpParams({ fromObject: { ...sortCriteria } }) });
 
   // Create & Update
 
-  upsertCategory = (category: ExpenseUpsertDto): Observable<void> => this.httpClient.put<void>(this.apiUrl, category);
+  upsertExpense = (expense: ExpenseUpsertDto): Observable<void> => this.httpClient.put<void>(this.apiUrl, expense);
 
   // Delete
 
-  deleteCategory = (id: string): Observable<void> => this.httpClient.delete<void>(`${this.apiUrl}/${id}`);
+  deleteExpense = (id: string): Observable<void> => this.httpClient.delete<void>(`${this.apiUrl}/${id}`);
 }
