@@ -27,7 +27,7 @@ import {
   ModalController,
   ViewDidEnter
 } from '@ionic/angular/standalone';
-import { ReactiveFormsModule } from '@angular/forms';
+import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { add, alertCircleOutline, search, swapVertical } from 'ionicons/icons';
 import CategoryModalComponent from '../../component/category-modal/category-modal.component';
@@ -76,6 +76,7 @@ export default class CategoryListComponent implements ViewDidEnter {
   private readonly categoryService = inject(CategoryService);
   private readonly modalCtrl = inject(ModalController);
   private readonly toastService = inject(ToastService);
+  private readonly formBuilder = inject(NonNullableFormBuilder);
 
   categories: Category[] | null = null;
   readonly initialSort = 'name,asc';
