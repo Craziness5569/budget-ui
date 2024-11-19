@@ -22,7 +22,8 @@ import { CategoryService } from '../../service/category.service';
 import { LoadingIndicatorService } from '../../../shared/service/loading-indicator.service';
 import { finalize } from 'rxjs/operators';
 import { CategoryUpsertDto, SortOption } from '../../../shared/domain';
-import { Subscription } from 'rxjs'; // Import für finalize
+import { Subscription } from 'rxjs';
+import { ActionSheetService } from '../../../shared/service/action-sheet.service'; // Import für finalize
 
 @Component({
   selector: 'app-category-modal',
@@ -52,6 +53,7 @@ export default class CategoryModalComponent implements ViewDidEnter {
   private readonly loadingIndicatorService = inject(LoadingIndicatorService);
   private readonly modalCtrl = inject(ModalController);
   private readonly toastService = inject(ToastService);
+  private readonly actionSheetService = inject(ActionSheetService);
   // Form Group
   readonly categoryForm = this.formBuilder.group({
     id: [null! as string], // hidden
