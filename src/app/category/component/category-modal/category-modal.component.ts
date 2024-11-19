@@ -14,14 +14,15 @@ import {
   ModalController,
   ViewDidEnter
 } from '@ionic/angular/standalone';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { close, save, text, trash } from 'ionicons/icons';
 import { ToastService } from '../../../shared/service/toast.service';
 import { CategoryService } from '../../service/category.service';
 import { LoadingIndicatorService } from '../../../shared/service/loading-indicator.service';
 import { finalize } from 'rxjs/operators';
-import { CategoryUpsertDto } from '../../../shared/domain'; // Import für finalize
+import { CategoryUpsertDto, SortOption } from '../../../shared/domain';
+import { Subscription } from 'rxjs'; // Import für finalize
 
 @Component({
   selector: 'app-category-modal',
@@ -47,7 +48,7 @@ import { CategoryUpsertDto } from '../../../shared/domain'; // Import für final
 export default class CategoryModalComponent implements ViewDidEnter {
   // DI
   private readonly categoryService = inject(CategoryService);
-  private readonly formBuilder = inject(FormBuilder);
+  private readonly formBuilder = inject(NonNullableFormBuilder);
   private readonly loadingIndicatorService = inject(LoadingIndicatorService);
   private readonly modalCtrl = inject(ModalController);
   private readonly toastService = inject(ToastService);
@@ -57,6 +58,13 @@ export default class CategoryModalComponent implements ViewDidEnter {
     name: ['', [Validators.required, Validators.maxLength(40)]]
   });
   @ViewChild('nameInput') nameInput?: IonInput;
+  private searchFormSubscription?: Subscription;
+  readonly sortOptions: SortOption[] = [
+    { label: 'Created at (newest first)', value: 'createdAt,desc' },
+    { label: 'Created at (oldest first)', value: 'createdAt,asc' },
+    { label: 'Name (A-Z)', value: 'name,asc' },
+    { label: 'Name (Z-A)', value: 'name,desc' }
+  ];
   constructor() {
     // Add all used Ionic icons
     addIcons({ close, save, text, trash });
