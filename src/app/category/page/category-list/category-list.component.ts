@@ -33,9 +33,10 @@ import { add, alertCircleOutline, search, swapVertical } from 'ionicons/icons';
 import CategoryModalComponent from '../../component/category-modal/category-modal.component';
 import { ToastService } from '../../../shared/service/toast.service';
 import { CategoryService } from '../../service/category.service';
-import { Category, CategoryCriteria } from '../../../shared/domain';
+import { Category, CategoryCriteria, SortOption } from '../../../shared/domain';
 import { finalize } from 'rxjs/operators';
 import { InfiniteScrollCustomEvent, RefresherCustomEvent } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-category-list',
@@ -83,6 +84,13 @@ export default class CategoryListComponent implements ViewDidEnter {
   lastPageReached = false;
   loading = false;
   searchCriteria: CategoryCriteria = { page: 0, size: 25, sort: this.initialSort };
+  private searchFormSubscription?: Subscription;
+  readonly sortOptions: SortOption[] = [
+    { label: 'Created at (newest first)', value: 'createdAt,desc' },
+    { label: 'Created at (oldest first)', value: 'createdAt,asc' },
+    { label: 'Name (A-Z)', value: 'name,asc' },
+    { label: 'Name (Z-A)', value: 'name,desc' }
+  ];
 
   constructor() {
     // Add all used Ionic icons
