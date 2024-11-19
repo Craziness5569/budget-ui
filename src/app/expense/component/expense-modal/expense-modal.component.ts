@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, Input, ViewChild } from '@angular/core';
 import {
   IonButton,
   IonButtons,
@@ -21,10 +21,16 @@ import {
   IonToolbar,
   ModalController
 } from '@ionic/angular/standalone';
-import { ReactiveFormsModule } from '@angular/forms';
+import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { add, calendar, cash, close, pricetag, save, text, trash } from 'ionicons/icons';
 import CategoryModalComponent from '../../../category/component/category-modal/category-modal.component';
+import { LoadingIndicatorService } from '../../../shared/service/loading-indicator.service';
+import { ToastService } from '../../../shared/service/toast.service';
+import { ActionSheetService } from '../../../shared/service/action-sheet.service';
+import { ExpenseService } from '../../../category/service/expenses.service';
+import { Subscription } from 'rxjs';
+import { Expense, SortOption } from '../../../shared/domain';
 
 @Component({
   selector: 'app-expense-modal',
@@ -57,8 +63,27 @@ import CategoryModalComponent from '../../../category/component/category-modal/c
 })
 export default class ExpenseModalComponent {
   // DI
+  private readonly ExpenseService = inject(ExpenseService);
+  private readonly formBuilder = inject(NonNullableFormBuilder);
+  private readonly loadingIndicatorService = inject(LoadingIndicatorService);
   private readonly modalCtrl = inject(ModalController);
-
+  private readonly toastService = inject(ToastService);
+  private readonly actionSheetService = inject(ActionSheetService);
+  // Form Group
+  readonly expenseForm = this.formBuilder.group({
+    id: [null! as string], // hidden
+    name: ['', [Validators.required, Validators.maxLength(40)]]
+  });
+  @ViewChild('nameInput') nameInput?: IonInput;
+  // Passed into the component by the ModalController, available in the ionViewWillEnter
+  @Input() expense: Expense = {} as Expense;
+  private searchFormSubscription?: Subscription;
+  readonly sortOptions: SortOption[] = [
+    { label: 'Created at (newest first)', value: 'createdAt,desc' },
+    { label: 'Created at (oldest first)', value: 'createdAt,asc' },
+    { label: 'Name (A-Z)', value: 'name,asc' },
+    { label: 'Name (Z-A)', value: 'name,desc' }
+  ];
   constructor() {
     // Add all used Ionic icons
     addIcons({ close, save, text, pricetag, add, cash, calendar, trash });
