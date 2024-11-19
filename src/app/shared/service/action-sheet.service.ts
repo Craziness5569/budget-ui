@@ -11,6 +11,7 @@ export class ActionSheetService {
   constructor() {
     addIcons({ close, trash, refresh });
   }
+
   showUpdateConfirmation = (): Observable<void> =>
     this.showActionSheet(
       {
@@ -23,6 +24,7 @@ export class ActionSheetService {
       },
       'update'
     );
+
   showDeletionConfirmation = (message: string): Observable<void> =>
     this.showActionSheet(
       {
@@ -35,10 +37,6 @@ export class ActionSheetService {
       },
       'delete'
     );
-
-  // --------------
-  // Helper methods
-  // --------------
 
   private readonly showActionSheet = (actionSheetOptions: ActionSheetOptions, actionRole: string): Observable<void> =>
     from(
