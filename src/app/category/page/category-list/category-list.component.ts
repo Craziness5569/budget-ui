@@ -98,13 +98,15 @@ export default class CategoryListComponent implements ViewDidEnter {
     addIcons({ swapVertical, search, alertCircleOutline, add });
   }
 
-  async openModal(): Promise<void> {
-    const modal = await this.modalCtrl.create({ component: CategoryModalComponent });
+  async openModal(category?: Category): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: CategoryModalComponent,
+      componentProps: { category: category ?? {} }
+    });
     modal.present();
     const { role } = await modal.onWillDismiss();
     if (role === 'refresh') this.reloadCategories();
   }
-
   ionViewDidEnter(): void {
     this.searchFormSubscription = this.searchForm.valueChanges.pipe(debounceTime(400)).subscribe(searchParams => {
       this.searchCriteria = { ...this.searchCriteria, ...searchParams, page: 0 };
