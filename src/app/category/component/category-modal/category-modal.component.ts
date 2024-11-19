@@ -23,7 +23,7 @@ import { CategoryService } from '../../service/category.service';
 import { LoadingIndicatorService } from '../../../shared/service/loading-indicator.service';
 import { finalize } from 'rxjs/operators';
 import { Category, CategoryUpsertDto, SortOption } from '../../../shared/domain';
-import { Subscription } from 'rxjs';
+import { mergeMap, Subscription } from 'rxjs';
 import { ActionSheetService } from '../../../shared/service/action-sheet.service'; // Import für finalize
 
 @Component({
@@ -101,6 +101,20 @@ export default class CategoryModalComponent implements ViewWillEnter, ViewDidEnt
   }
 
   delete(): void {
-    this.modalCtrl.dismiss(null, 'delete');
+    this.actionSheetService
+      .showDeletionConfirmation('Are you sure you want to delete this category?')
+      .pipe(mergeMap(() => this.loadingIndicatorService.showLoadingIndicator({ message: 'Deleting category' })))
+      .subscribe(loadingIndicator => {
+        this.categoryService
+          .deleteCategory(this.category.id!)
+          .pipe(finalize(() => loadingIndicator.dismiss()))
+          .subscribe({
+            next: () => {
+              this.toastService.displaySuccessToast('Category deleted');
+              this.modalCtrl.dismiss(null, 'refresh');
+            },
+            error: error => this.toastService.displayWarningToast('Could not delete category', error)
+          });
+      });
   }
 }
