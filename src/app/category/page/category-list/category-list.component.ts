@@ -34,7 +34,7 @@ import CategoryModalComponent from '../../component/category-modal/category-moda
 import { ToastService } from '../../../shared/service/toast.service';
 import { CategoryService } from '../../service/category.service';
 import { Category, CategoryCriteria, SortOption } from '../../../shared/domain';
-import { finalize } from 'rxjs/operators';
+import { debounceTime, finalize } from 'rxjs/operators';
 import { InfiniteScrollCustomEvent, RefresherCustomEvent } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 
@@ -104,9 +104,20 @@ export default class CategoryListComponent implements ViewDidEnter {
     const { role } = await modal.onWillDismiss();
     if (role === 'refresh') this.reloadCategories();
   }
+
   ionViewDidEnter(): void {
+    this.searchFormSubscription = this.searchForm.valueChanges.pipe(debounceTime(400)).subscribe(searchParams => {
+      this.searchCriteria = { ...this.searchCriteria, ...searchParams, page: 0 };
+      this.loadCategories();
+    });
     this.loadCategories();
   }
+
+  ionViewDidLeave(): void {
+    this.searchFormSubscription?.unsubscribe();
+    this.searchFormSubscription = undefined;
+  }
+
   private loadCategories(next?: () => void): void {
     if (!this.searchCriteria.name) delete this.searchCriteria.name;
     this.loading = true;
@@ -127,10 +138,12 @@ export default class CategoryListComponent implements ViewDidEnter {
         error: error => this.toastService.displayWarningToast('Could not load categories', error)
       });
   }
+
   loadNextCategoryPage($event: InfiniteScrollCustomEvent) {
     this.searchCriteria.page++;
     this.loadCategories(() => $event.target.complete());
   }
+
   reloadCategories($event?: RefresherCustomEvent): void {
     this.searchCriteria.page = 0;
     this.loadCategories(() => $event?.target.complete());
