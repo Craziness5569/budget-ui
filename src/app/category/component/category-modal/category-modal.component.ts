@@ -12,7 +12,8 @@ import {
   IonTitle,
   IonToolbar,
   ModalController,
-  ViewDidEnter
+  ViewDidEnter,
+  ViewWillEnter
 } from '@ionic/angular/standalone';
 import { FormBuilder, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { addIcons } from 'ionicons';
@@ -46,7 +47,7 @@ import { ActionSheetService } from '../../../shared/service/action-sheet.service
     IonFabButton
   ]
 })
-export default class CategoryModalComponent implements ViewDidEnter {
+export default class CategoryModalComponent implements ViewWillEnter, ViewDidEnter {
   // DI
   private readonly categoryService = inject(CategoryService);
   private readonly formBuilder = inject(NonNullableFormBuilder);
@@ -75,6 +76,9 @@ export default class CategoryModalComponent implements ViewDidEnter {
   }
   ionViewDidEnter(): void {
     this.nameInput?.setFocus();
+  }
+  ionViewWillEnter(): void {
+    this.categoryForm.patchValue(this.category);
   }
   cancel(): void {
     this.modalCtrl.dismiss(null, 'cancel');
