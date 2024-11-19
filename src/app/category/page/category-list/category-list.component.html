@@ -72,4 +72,18 @@
       </ion-col>
     </ion-row>
   </ion-grid>
+  <!-- Create Button -->
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="openModal()">
+      <ion-icon name="add" />
+    </ion-fab-button>
+  </ion-fab>
+  <!-- Infinite Scroll -->
+  <ion-infinite-scroll [disabled]="lastPageReached || loading" (ionInfinite)="loadNextCategoryPage($event)">
+    <ion-infinite-scroll-content />
+  </ion-infinite-scroll>
+  <!-- Refresher -->
+  <ion-refresher slot="fixed" (ionRefresh)="reloadCategories($event)" [disabled]="loading">
+    <ion-refresher-content />
+  </ion-refresher>
 </ion-content>

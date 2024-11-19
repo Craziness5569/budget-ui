@@ -1,4 +1,4 @@
-import { Component, inject, Input, ProviderToken, ViewChild } from '@angular/core';
+import { Component, inject, Input, ViewChild } from '@angular/core';
 import {
   IonButton,
   IonButtons,
@@ -15,7 +15,7 @@ import {
   ViewDidEnter,
   ViewWillEnter
 } from '@ionic/angular/standalone';
-import { FormBuilder, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { close, save, text, trash } from 'ionicons/icons';
 import { ToastService } from '../../../shared/service/toast.service';
