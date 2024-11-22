@@ -6,18 +6,18 @@
     <!-- Cancel Button -->
     <ion-buttons slot="start">
       <ion-button color="medium" (click)="cancel()">
-        <ion-icon slot="start" name="close" />
+        <ion-icon slot="start" name="close"></ion-icon>
         Cancel
       </ion-button>
     </ion-buttons>
 
     <!-- Title -->
-    <ion-title>{{expense.id ? 'Edit' : 'Add'}} category</ion-title>
+    <ion-title>{{expense.id ? 'Edit' : 'Add'}} Expense</ion-title>
 
     <!-- Save Button -->
     <ion-buttons slot="end">
       <ion-button (click)="save()" [disabled]="expenseForm.pristine || expenseForm.invalid">
-        <ion-icon slot="start" name="save" />
+        <ion-icon slot="start" name="save"></ion-icon>
         Save
       </ion-button>
     </ion-buttons>
@@ -28,17 +28,34 @@
 <!-- Content -->
 <!-- ------- -->
 <ion-content class="ion-padding" [formGroup]="expenseForm">
+  <!-- Name -->
   <ion-item>
-    <ion-icon name="text" slot="start" />
-    <ion-input #nameInput formControlName="name" maxlength="40" placeholder="Name" required="true" />
+    <ion-icon name="text" slot="start"></ion-icon>
+    <ion-input #nameInput formControlName="name" maxlength="40" placeholder="Name" required="true"></ion-input>
   </ion-item>
 
+  <!-- Kategorie -->
+  <ion-item>
+    <ion-icon name="pricetag" slot="start"></ion-icon>
+    <ion-input formControlName="category" maxlength="30" placeholder="Category (optional)"></ion-input>
+  </ion-item>
+
+  <!-- Betrag -->
+  <ion-item>
+    <ion-icon name="cash" slot="start"></ion-icon>
+    <ion-input formControlName="amount" type="number" placeholder="Amount" required="true"></ion-input>
+  </ion-item>
+
+  <!-- Datum -->
+  <ion-item>
+    <ion-icon name="calendar" slot="start"></ion-icon>
+    <ion-datetime formControlName="date" presentation="date"></ion-datetime>
+  </ion-item>
 
   <!-- Delete Button -->
   <ion-fab slot="fixed" vertical="bottom" horizontal="end">
     <ion-fab-button (click)="delete()" color="danger">
-      <ion-icon name="trash" />
+      <ion-icon name="trash"></ion-icon>
     </ion-fab-button>
   </ion-fab>
 </ion-content>
-

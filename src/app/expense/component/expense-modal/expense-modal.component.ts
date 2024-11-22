@@ -62,30 +62,36 @@ import { Expense, SortOption } from '../../../shared/domain';
   ]
 })
 export default class ExpenseModalComponent {
-  // DI
+  // Dependency Injection
   private readonly ExpenseService = inject(ExpenseService);
   private readonly formBuilder = inject(NonNullableFormBuilder);
   private readonly loadingIndicatorService = inject(LoadingIndicatorService);
   private readonly modalCtrl = inject(ModalController);
   private readonly toastService = inject(ToastService);
   private readonly actionSheetService = inject(ActionSheetService);
+
   // Form Group
   readonly expenseForm = this.formBuilder.group({
-    id: [null! as string], // hidden
-    name: ['', [Validators.required, Validators.maxLength(40)]]
+    id: [null! as string],
+    name: ['', [Validators.required, Validators.maxLength(40)]],
+    category: [''],
+    amount: [0, [Validators.required, Validators.min(0)]],
+    date: [new Date(), Validators.required]
   });
+
   @ViewChild('nameInput') nameInput?: IonInput;
-  // Passed into the component by the ModalController, available in the ionViewWillEnter
   @Input() expense: Expense = {} as Expense;
+
   private searchFormSubscription?: Subscription;
+
   readonly sortOptions: SortOption[] = [
     { label: 'Created at (newest first)', value: 'createdAt,desc' },
     { label: 'Created at (oldest first)', value: 'createdAt,asc' },
     { label: 'Name (A-Z)', value: 'name,asc' },
     { label: 'Name (Z-A)', value: 'name,desc' }
   ];
+
   constructor() {
-    // Add all used Ionic icons
     addIcons({ close, save, text, pricetag, add, cash, calendar, trash });
   }
 
@@ -94,7 +100,13 @@ export default class ExpenseModalComponent {
   }
 
   save(): void {
-    this.modalCtrl.dismiss(null, 'save');
+    if (this.expenseForm.valid) {
+      const updatedExpense: Expense = {
+        ...this.expense,
+        ...(this.expenseForm.value as Partial<Expense>)
+      };
+      this.modalCtrl.dismiss(updatedExpense, 'save');
+    }
   }
 
   delete(): void {

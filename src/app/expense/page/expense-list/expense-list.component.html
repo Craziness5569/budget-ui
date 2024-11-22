@@ -1,1 +1,70 @@
-Expense List
+<ion-header>
+  <ion-toolbar>
+    <ion-progress-bar *ngIf="loading" type="indeterminate"></ion-progress-bar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Expenses</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Such- und Sortierbereich -->
+  <ion-grid class="ion-padding">
+    <ion-row>
+      <!-- Sortieren nach -->
+      <ion-col size="12" size-sm="4">
+        <ion-item>
+          <ion-icon name="swap-vertical" slot="start"></ion-icon>
+          <ion-select interface="popover">
+            <ion-select-option value="date">Date</ion-select-option>
+            <ion-select-option value="amount">Amount</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+
+
+      <ion-col size="12" size-sm="4">
+        <ion-item>
+          <ion-icon name="pricetag" slot="start"></ion-icon>
+          <ion-select placeholder="Category" [(ngModel)]="selectedCategory" (ionChange)="filterExpenses()">
+            <ion-select-option *ngFor="let category of categories" [value]="category">
+              {{ category }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+
+
+      <!-- Suchfeld -->
+      <ion-col size="12" size-sm="4">
+        <ion-item>
+          <ion-icon name="search" slot="start"></ion-icon>
+          <ion-input maxlength="40" placeholder="Search" [clearInput]="true"></ion-input>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- Tabelle der Ausgaben -->
+  <ion-grid class="ion-padding">
+    <ion-row>
+      <ion-col>
+        <ion-item *ngFor="let expense of expenses" button detail>
+          <ion-label>
+            <h3>{{ expense.date }}</h3>
+            <p>{{ expense.description }} - {{ expense.category }}</p>
+            <strong>${{ expense.amount }}</strong>
+          </ion-label>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- Floating Action Button -->
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button>
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

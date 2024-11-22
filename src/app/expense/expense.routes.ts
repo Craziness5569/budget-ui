@@ -6,6 +6,7 @@ const expenseRoutes: Routes = [
   {
     path: '',
     loadComponent: () => import('./page/expense-list/expense-list.component'),
+
     title: 'Expenses'
   }
 ];
