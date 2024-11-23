@@ -1,101 +1,153 @@
 import { Component, inject } from '@angular/core';
 import {
-  IonButton,
   IonButtons,
+  IonCol,
   IonContent,
   IonFab,
   IonFabButton,
+  IonGrid,
   IonHeader,
   IonIcon,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
   IonInput,
   IonItem,
   IonLabel,
   IonList,
-  IonTitle,
-  IonToolbar,
-  IonGrid,
-  IonRow,
-  IonCol,
-  IonSelect,
-  IonSelectOption,
   IonMenuButton,
   IonProgressBar,
-  ModalController
+  IonRefresher,
+  IonRefresherContent,
+  IonRow,
+  IonSelect,
+  IonSelectOption,
+  IonSkeletonText,
+  IonTitle,
+  IonToolbar,
+  ModalController,
+  ViewDidEnter
 } from '@ionic/angular/standalone';
+import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
-import { add, pricetag, search, swapVertical } from 'ionicons/icons';
-import { set, addMonths } from 'date-fns';
-import { FormsModule } from '@angular/forms';
-import { NgFor, NgIf } from '@angular/common'; // NgFor und NgIf importieren
+import { add, alertCircleOutline, search, swapVertical } from 'ionicons/icons';
+import ExpenseModalComponent from '../../../expense/component/expense-modal/expense-modal.component';
+import { ToastService } from '../../../shared/service/toast.service';
+import { ExpenseService } from '../../../category/service/expenses.service';
+import { Expense, ExpenseCriteria, SortOption } from '../../../shared/domain';
+import { debounceTime, finalize } from 'rxjs/operators';
+import { InfiniteScrollCustomEvent, RefresherCustomEvent } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-expense-list',
   templateUrl: './expense-list.component.html',
   standalone: true,
   imports: [
-    // Alle benötigten Ionic-Komponenten importieren
+    ReactiveFormsModule,
+
+    // Ionic
     IonHeader,
     IonToolbar,
-    IonTitle,
     IonButtons,
-    IonButton,
     IonMenuButton,
+    IonTitle,
+    IonProgressBar,
     IonContent,
-    IonFab,
-    IonFabButton,
-    IonIcon,
-    IonItem,
-    IonLabel,
-    IonList,
+    IonRefresher,
+    IonRefresherContent,
     IonGrid,
     IonRow,
     IonCol,
-    IonInput,
+    IonList,
+    IonItem,
+    IonIcon,
     IonSelect,
     IonSelectOption,
-    IonProgressBar,
-    FormsModule,
-    NgFor, // NgFor hinzufügen
-    NgIf // NgIf hinzufügen
+    IonInput,
+    IonLabel,
+    IonSkeletonText,
+    IonInfiniteScroll,
+    IonInfiniteScrollContent,
+    IonFab,
+    IonFabButton
   ]
 })
-export default class ExpenseListComponent {
+export default class ExpenseListComponent implements ViewDidEnter {
+  // DI
+  private readonly expenseService = inject(ExpenseService);
   private readonly modalCtrl = inject(ModalController);
+  private readonly toastService = inject(ToastService);
+  private readonly formBuilder = inject(NonNullableFormBuilder);
 
-  date = set(new Date(), { date: 1 });
-  allExpenses = [
-    { date: '2024-11-20', description: 'Groceries', category: 'Food', amount: 50 },
-    { date: '2024-11-18', description: 'Movie Night', category: 'Entertainment', amount: 15 },
-    { date: '2024-11-15', description: 'Gas', category: 'Transport', amount: 30 }
-  ];
-  expenses = [...this.allExpenses];
-  categories = ['Food', 'Entertainment', 'Transport', 'Miscellaneous'];
-  selectedCategory: string | null = null;
-  searchTerm: string = '';
+  expenses: Expense[] | null = null;
+  readonly initialSort = 'name,asc';
+  lastPageReached = false;
   loading = false;
+  searchCriteria: ExpenseCriteria = { page: 0, size: 25, sort: this.initialSort };
+  readonly searchForm = this.formBuilder.group({ name: [''], sort: [this.initialSort] });
+  private searchFormSubscription?: Subscription;
+  readonly sortOptions: SortOption[] = [
+    { label: 'Created at (newest first)', value: 'createdAt,desc' },
+    { label: 'Created at (oldest first)', value: 'createdAt,asc' },
+    { label: 'Name (A-Z)', value: 'name,asc' },
+    { label: 'Name (Z-A)', value: 'name,desc' }
+  ];
 
   constructor() {
-    addIcons({ swapVertical, pricetag, search, add }); // Icons hinzufügen
+    // Add all used Ionic icons
+    addIcons({ swapVertical, search, alertCircleOutline, add });
   }
 
-  addMonths = (number: number): void => {
-    this.date = addMonths(this.date, number); // Datum um Monate verschieben
-  };
-
-  filterExpenses(): void {
-    this.expenses = this.allExpenses.filter(expense => {
-      const matchesCategory = this.selectedCategory ? expense.category === this.selectedCategory : true;
-      const matchesSearch = this.searchTerm ? expense.description.toLowerCase().includes(this.searchTerm.toLowerCase()) : true;
-
-      return matchesCategory && matchesSearch;
+  async openModal(expense?: Expense): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: ExpenseModalComponent,
+      componentProps: { expense: expense ?? {} }
     });
+    modal.present();
+    const { role } = await modal.onWillDismiss();
+    if (role === 'refresh') this.reloadExpenses();
+  }
+  ionViewDidEnter(): void {
+    this.searchFormSubscription = this.searchForm.valueChanges.pipe(debounceTime(400)).subscribe(searchParams => {
+      this.searchCriteria = { ...this.searchCriteria, ...searchParams, page: 0 };
+      this.loadExpenses();
+    });
+    this.loadExpenses();
   }
 
-  sortExpenses(sortBy: string): void {
-    if (sortBy === 'date') {
-      this.expenses.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    } else if (sortBy === 'amount') {
-      this.expenses.sort((a, b) => b.amount - a.amount);
-    }
+  ionViewDidLeave(): void {
+    this.searchFormSubscription?.unsubscribe();
+    this.searchFormSubscription = undefined;
+  }
+
+  private loadExpenses(next?: () => void): void {
+    if (!this.searchCriteria.name) delete this.searchCriteria.name;
+    this.loading = true;
+    this.expenseService
+      .getExpenses(this.searchCriteria)
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+          if (next) next();
+        })
+      )
+      .subscribe({
+        next: expenses => {
+          if (this.searchCriteria.page === 0 || !this.expenses) this.expenses = [];
+          this.expenses.push(...expenses.content);
+          this.lastPageReached = expenses.last;
+        },
+        error: error => this.toastService.displayWarningToast('Could not load categories', error)
+      });
+  }
+
+  loadNextExpensesPage($event: InfiniteScrollCustomEvent) {
+    this.searchCriteria.page++;
+    this.loadExpenses(() => $event.target.complete());
+  }
+
+  reloadExpenses($event?: RefresherCustomEvent): void {
+    this.searchCriteria.page = 0;
+    this.loadExpenses(() => $event?.target.complete());
   }
 }

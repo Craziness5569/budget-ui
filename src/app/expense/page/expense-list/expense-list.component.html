@@ -1,70 +1,89 @@
+<!-- ------ -->
+<!-- Header -->
+<!-- ------ -->
 <ion-header>
   <ion-toolbar>
-    <ion-progress-bar *ngIf="loading" type="indeterminate"></ion-progress-bar>
+    @if (loading) {
+      <ion-progress-bar type="indeterminate" />
+    }
     <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
+      <ion-menu-button />
     </ion-buttons>
-    <ion-title>Expenses</ion-title>
+    <ion-title>Categories</ion-title>
   </ion-toolbar>
 </ion-header>
 
+<!-- ------- -->
+<!-- Content -->
+<!-- ------- -->
 <ion-content>
-  <!-- Such- und Sortierbereich -->
-  <ion-grid class="ion-padding">
+  <!-- Search & Sort Section -->
+  <ion-grid class="ion-padding" [formGroup]="searchForm">
     <ion-row>
-      <!-- Sortieren nach -->
-      <ion-col size="12" size-sm="4">
+      <ion-col size="12" size-sm="6">
         <ion-item>
-          <ion-icon name="swap-vertical" slot="start"></ion-icon>
-          <ion-select interface="popover">
-            <ion-select-option value="date">Date</ion-select-option>
-            <ion-select-option value="amount">Amount</ion-select-option>
+          <ion-icon name="swap-vertical" slot="start" />
+          <ion-select interface="popover" formControlName="sort">
+            @for (sortOption of sortOptions; track sortOption.label) {
+              <ion-select-option [value]="sortOption.value">
+                {{ sortOption.label }}
+              </ion-select-option>
+            }
           </ion-select>
         </ion-item>
       </ion-col>
-
-
-      <ion-col size="12" size-sm="4">
+      <ion-col size="12" size-sm="6">
         <ion-item>
-          <ion-icon name="pricetag" slot="start"></ion-icon>
-          <ion-select placeholder="Category" [(ngModel)]="selectedCategory" (ionChange)="filterExpenses()">
-            <ion-select-option *ngFor="let category of categories" [value]="category">
-              {{ category }}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
-      </ion-col>
-
-
-      <!-- Suchfeld -->
-      <ion-col size="12" size-sm="4">
-        <ion-item>
-          <ion-icon name="search" slot="start"></ion-icon>
-          <ion-input maxlength="40" placeholder="Search" [clearInput]="true"></ion-input>
+          <ion-icon name="search" slot="start" />
+          <ion-input maxlength="40" placeholder="Search" [clearInput]="true" formControlName="name" />
         </ion-item>
       </ion-col>
     </ion-row>
   </ion-grid>
 
-  <!-- Tabelle der Ausgaben -->
+  <!-- Categories Section -->
   <ion-grid class="ion-padding">
     <ion-row>
       <ion-col>
-        <ion-item *ngFor="let expense of expenses" button detail>
-          <ion-label>
-            <h3>{{ expense.date }}</h3>
-            <p>{{ expense.description }} - {{ expense.category }}</p>
-            <strong>${{ expense.amount }}</strong>
-          </ion-label>
-        </ion-item>
+        @switch (expenses?.length) {
+          @case (null) {
+            @for (i of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]; track i) {
+              <ion-item>
+                <ion-label>
+                  <ion-skeleton-text [animated]="true" style="width: 80px" />
+                </ion-label>
+              </ion-item>
+            }
+          }
+          @case (0) {
+            <ion-item>
+              <ion-icon slot="start" name="alert-circle-outline" />
+              <ion-label> No categories found </ion-label>
+            </ion-item>
+          }
+          @default {
+            @for (expense of expenses; track expense.id) {
+              <ion-item button="true" [detail]="true" (click)="openModal(expense)">
+                <ion-label> {{ expense.name }} </ion-label>
+              </ion-item>
+            }
+          }
+        }
       </ion-col>
     </ion-row>
   </ion-grid>
-
-  <!-- Floating Action Button -->
+  <!-- Create Button -->
   <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button>
-      <ion-icon name="add"></ion-icon>
+    <ion-fab-button (click)="openModal()">
+      <ion-icon name="add" />
     </ion-fab-button>
   </ion-fab>
+  <!-- Infinite Scroll -->
+  <ion-infinite-scroll [disabled]="lastPageReached || loading" (ionInfinite)="loadNextExpensesPage($event)">
+    <ion-infinite-scroll-content />
+  </ion-infinite-scroll>
+  <!-- Refresher -->
+  <ion-refresher slot="fixed" (ionRefresh)="reloadExpenses($event)" [disabled]="loading">
+    <ion-refresher-content />
+  </ion-refresher>
 </ion-content>

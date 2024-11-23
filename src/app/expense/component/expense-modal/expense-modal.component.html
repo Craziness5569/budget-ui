@@ -37,13 +37,33 @@
   <!-- Kategorie -->
   <ion-item>
     <ion-icon name="pricetag" slot="start"></ion-icon>
-    <ion-input formControlName="category" maxlength="30" placeholder="Category (optional)"></ion-input>
-  </ion-item>
+    <ion-select formControlName="category" placeholder="Select Category (optional)">
+      <!-- Dynamische Optionen für Kategorien -->
+      @for (category of categories; track category.id) {
+        <ion-select-option [value]="category.id">
+          {{ category.name }}
+        </ion-select-option>
+      }
+    </ion-select>
+     </ion-item>
 
   <!-- Betrag -->
   <ion-item>
     <ion-icon name="cash" slot="start"></ion-icon>
-    <ion-input formControlName="amount" type="number" placeholder="Amount" required="true"></ion-input>
+    <div style="display: flex; align-items: center; position: relative; width: 100%;">
+      <ion-input
+        formControlName="amount"
+        type="number"
+        placeholder="Amount"
+        required="true"
+        style="flex: 1; padding-right: 50px;"
+      ></ion-input>
+      <span
+        style="position: absolute; right: 0; color: #666; font-size: 14px; pointer-events: none;"
+      >
+      CHF
+    </span>
+    </div>
   </ion-item>
 
   <!-- Datum -->
@@ -51,6 +71,7 @@
     <ion-icon name="calendar" slot="start"></ion-icon>
     <ion-datetime formControlName="date" presentation="date"></ion-datetime>
   </ion-item>
+
 
   <!-- Delete Button -->
   <ion-fab slot="fixed" vertical="bottom" horizontal="end">
