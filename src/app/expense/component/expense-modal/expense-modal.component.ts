@@ -93,24 +93,33 @@ export default class ExpenseModalComponent implements ViewWillEnter, ViewDidEnte
     { label: 'Name (Z-A)', value: 'name,desc' }
   ];
   categories: Category[] = [];
+
   constructor() {
     // Icons registrieren
     addIcons({ close, save, text, add, pricetag, cash, calendar, trash });
   }
+
   // Lifecycle-Hook
   ionViewDidEnter(): void {
     this.nameInput?.setFocus();
   }
+
   ionViewWillEnter(): void {
     this.expenseForm.patchValue(this.expense);
+    this.loadAllCategories(); // Kategorien laden
   }
+
   // Methode zum Laden aller Kategorien
   private loadAllCategories(): void {
     this.categoryService.getAllCategories({ sort: 'name,asc' }).subscribe({
-      next: categories => (this.categories = categories),
+      next: categories => {
+        console.log('Categories loaded:', categories);
+        this.categories = categories;
+      },
       error: error => this.toastService.displayWarningToast('Could not load categories', error)
     });
   }
+
   // Modal-Operationen
   cancel(): void {
     this.modalCtrl.dismiss(null, 'cancel');
@@ -151,5 +160,17 @@ export default class ExpenseModalComponent implements ViewWillEnter, ViewDidEnte
             error: error => this.toastService.displayWarningToast('Could not delete expense', error)
           });
       });
+  }
+  /// Methode zum Hinzufügen einer neuen Kategorie
+  addCategory(): void {
+    console.log('Add Category button clicked'); // Debugging
+    this.categoryService.addNewCategory({ name: 'New Category' }).subscribe({
+      next: () => {
+        console.log('Category added successfully');
+        this.toastService.displaySuccessToast('Category added successfully');
+        this.loadAllCategories(); // Nach dem Hinzufügen die Liste aktualisieren
+      },
+      error: error => this.toastService.displayWarningToast('Could not add category', error)
+    });
   }
 }

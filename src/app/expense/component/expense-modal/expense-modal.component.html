@@ -24,6 +24,7 @@
   </ion-toolbar>
 </ion-header>
 
+
 <!-- ------- -->
 <!-- Content -->
 <!-- ------- -->
@@ -45,7 +46,12 @@
         </ion-select-option>
       }
     </ion-select>
-     </ion-item>
+    <!-- Add Category Button -->
+    <ion-button (click)="addCategory()">
+      <ion-icon slot="start" name="add"></ion-icon>
+    </ion-button>
+
+  </ion-item>
 
   <!-- Betrag -->
   <ion-item>

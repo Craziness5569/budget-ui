@@ -23,6 +23,9 @@ export class CategoryService {
 
   upsertCategory = (category: CategoryUpsertDto): Observable<void> => this.httpClient.put<void>(this.apiUrl, category);
 
+  // Methode zum Hinzufügen einer neuen Kategorie
+  addNewCategory = (category: Partial<Category>): Observable<Category> => this.httpClient.post<Category>(this.apiUrl, category);
+
   // Delete
 
   deleteCategory = (id: string): Observable<void> => this.httpClient.delete<void>(`${this.apiUrl}/${id}`);
