@@ -9,7 +9,7 @@
     <ion-buttons slot="start">
       <ion-menu-button />
     </ion-buttons>
-    <ion-title>Categories</ion-title>
+    <ion-title>Expenses</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -20,7 +20,7 @@
   <!-- Search & Sort Section -->
   <ion-grid class="ion-padding" [formGroup]="searchForm">
     <ion-row>
-      <ion-col size="12" size-sm="6">
+      <ion-col size="12" size-sm="4">
         <ion-item>
           <ion-icon name="swap-vertical" slot="start" />
           <ion-select interface="popover" formControlName="sort">
@@ -32,7 +32,21 @@
           </ion-select>
         </ion-item>
       </ion-col>
-      <ion-col size="12" size-sm="6">
+      <ion-col size="12" size-sm="4">
+      <ion-item>
+        <ion-label></ion-label>
+        <ion-select
+          formControlName="categoryIds"
+          multiple="true"
+          placeholder="Category"
+        >
+          <ion-select-option *ngFor="let category of categories" [value]="category.id">
+            {{ category.name }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+      </ion-col>
+      <ion-col size="12" size-sm="4">
         <ion-item>
           <ion-icon name="search" slot="start" />
           <ion-input maxlength="40" placeholder="Search" [clearInput]="true" formControlName="name" />

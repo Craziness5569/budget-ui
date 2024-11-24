@@ -33,7 +33,7 @@ import { add, alertCircleOutline, search, swapVertical } from 'ionicons/icons';
 import ExpenseModalComponent from '../../../expense/component/expense-modal/expense-modal.component';
 import { ToastService } from '../../../shared/service/toast.service';
 import { ExpenseService } from '../../../category/service/expenses.service';
-import { Expense, ExpenseCriteria, SortOption } from '../../../shared/domain';
+import { Category, Expense, ExpenseCriteria, SortOption } from '../../../shared/domain';
 import { debounceTime, finalize } from 'rxjs/operators';
 import { InfiniteScrollCustomEvent, RefresherCustomEvent } from '@ionic/angular';
 import { Subscription } from 'rxjs';
@@ -44,7 +44,6 @@ import { Subscription } from 'rxjs';
   standalone: true,
   imports: [
     ReactiveFormsModule,
-
     // Ionic
     IonHeader,
     IonToolbar,
@@ -80,15 +79,22 @@ export default class ExpenseListComponent implements ViewDidEnter {
   private readonly formBuilder = inject(NonNullableFormBuilder);
 
   expenses: Expense[] | null = null;
+  categories: Category[] | null = null; // Liste der Kategorien
   readonly initialSort = 'name,asc';
   lastPageReached = false;
   loading = false;
-  searchCriteria: ExpenseCriteria = { page: 0, size: 25, sort: this.initialSort };
-  readonly searchForm = this.formBuilder.group({ name: [''], sort: [this.initialSort] });
+  searchCriteria: ExpenseCriteria = { page: 0, size: 25, sort: this.initialSort, categoryIds: [] };
+  readonly searchForm = this.formBuilder.group({
+    name: [''],
+    sort: [this.initialSort],
+    categoryIds: [[]] // Multiselect für Kategorie-IDs
+  });
   private searchFormSubscription?: Subscription;
   readonly sortOptions: SortOption[] = [
     { label: 'Created at (newest first)', value: 'createdAt,desc' },
     { label: 'Created at (oldest first)', value: 'createdAt,asc' },
+    { label: 'Date (newest first)', value: 'createdAt,asc' },
+    { label: 'Date (oldest first)', value: 'createdAt,desc' },
     { label: 'Name (A-Z)', value: 'name,asc' },
     { label: 'Name (Z-A)', value: 'name,desc' }
   ];
@@ -96,6 +102,17 @@ export default class ExpenseListComponent implements ViewDidEnter {
   constructor() {
     // Add all used Ionic icons
     addIcons({ swapVertical, search, alertCircleOutline, add });
+  }
+
+  ngOnInit() {
+    this.loadCategories(); // Lade die Kategorien beim Initialisieren
+  }
+
+  loadCategories() {
+    // Beispiel-HTTP-Anfrage, um Kategorien zu laden
+    this.expenseService.getCategories().subscribe(categories => {
+      this.categories = categories;
+    });
   }
 
   async openModal(expense?: Expense): Promise<void> {
@@ -107,6 +124,7 @@ export default class ExpenseListComponent implements ViewDidEnter {
     const { role } = await modal.onWillDismiss();
     if (role === 'refresh') this.reloadExpenses();
   }
+
   ionViewDidEnter(): void {
     this.searchFormSubscription = this.searchForm.valueChanges.pipe(debounceTime(400)).subscribe(searchParams => {
       this.searchCriteria = { ...this.searchCriteria, ...searchParams, page: 0 };
@@ -122,6 +140,10 @@ export default class ExpenseListComponent implements ViewDidEnter {
 
   private loadExpenses(next?: () => void): void {
     if (!this.searchCriteria.name) delete this.searchCriteria.name;
+    if (!this.searchCriteria.categoryIds || this.searchCriteria.categoryIds.length === 0) {
+      delete this.searchCriteria.categoryIds;
+    }
+
     this.loading = true;
     this.expenseService
       .getExpenses(this.searchCriteria)
@@ -137,7 +159,7 @@ export default class ExpenseListComponent implements ViewDidEnter {
           this.expenses.push(...expenses.content);
           this.lastPageReached = expenses.last;
         },
-        error: error => this.toastService.displayWarningToast('Could not load categories', error)
+        error: error => this.toastService.displayWarningToast('Could not load expenses', error)
       });
   }
 

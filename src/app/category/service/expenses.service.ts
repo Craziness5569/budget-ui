@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Expense, ExpenseCriteria, ExpenseUpsertDto, Page } from '../../shared/domain';
+import { Expense, ExpenseCriteria, ExpenseUpsertDto, Page, Category } from '../../shared/domain';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -9,22 +9,26 @@ export class ExpenseService {
   private readonly httpClient = inject(HttpClient);
 
   private readonly apiUrl = `${environment.backendUrl}/expenses`;
-  private readonly apiV2Url = `${environment.backendUrl}/v2/expenses`;
+  private readonly categoryApiUrl = `${environment.backendUrl}/categories`;
 
-  // Read
+  // Read Expenses
+  getExpenses(pagingCriteria: ExpenseCriteria): Observable<Page<Expense>> {
+    const params = new HttpParams({ fromObject: { ...pagingCriteria } });
+    return this.httpClient.get<Page<Expense>>(this.apiUrl, { params });
+  }
 
-  getExpenses = (pagingCriteria: ExpenseCriteria): Observable<Page<Expense>> =>
-    this.httpClient.get<Page<Expense>>(this.apiUrl, { params: new HttpParams({ fromObject: { ...pagingCriteria } }) });
+  // Read Categories
+  getCategories(): Observable<Category[]> {
+    return this.httpClient.get<Category[]>(this.categoryApiUrl);
+  }
 
-  upsertExpense = (expense: ExpenseUpsertDto): Observable<void> => this.httpClient.put<void>(this.apiUrl, expense);
+  // Upsert Expense (Create or Update)
+  upsertExpense(expense: ExpenseUpsertDto): Observable<void> {
+    return this.httpClient.put<void>(this.apiUrl, expense);
+  }
 
-  // Delete
-  deleteExpense = (id: string): Observable<void> => this.httpClient.delete<void>(`${this.apiUrl}/${id}`);
-}
-@Injectable({ providedIn: 'root' })
-export class CategoryService {
-  private readonly httpClient = inject(HttpClient);
-
-  private readonly apiUrl = `${environment.backendUrl}/categories`;
-  private readonly apiV2Url = `${environment.backendUrl}/v2/categories`;
+  // Delete Expense
+  deleteExpense(id: string): Observable<void> {
+    return this.httpClient.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }
