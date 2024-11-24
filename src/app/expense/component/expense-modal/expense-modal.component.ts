@@ -83,6 +83,11 @@ export default class ExpenseModalComponent implements ViewWillEnter, ViewDidEnte
     date: [formatISO(new Date()), Validators.required]
   });
 
+  // Modal-Formular für neue Kategorie
+  readonly addCategoryForm = this.formBuilder.group({
+    name: ['', [Validators.required, Validators.minLength(3)]]
+  });
+
   @ViewChild('nameInput') nameInput?: IonInput;
   @Input() expense: Expense = {} as Expense;
   private searchFormSubscription?: Subscription;
@@ -93,6 +98,7 @@ export default class ExpenseModalComponent implements ViewWillEnter, ViewDidEnte
     { label: 'Name (Z-A)', value: 'name,desc' }
   ];
   categories: Category[] = [];
+  isAddCategoryModalOpen = false; // State für das Modal
 
   constructor() {
     // Icons registrieren
@@ -120,6 +126,30 @@ export default class ExpenseModalComponent implements ViewWillEnter, ViewDidEnte
     });
   }
 
+  // Modal-Operationen für das Hinzufügen einer Kategorie
+  openAddCategoryModal(): void {
+    this.isAddCategoryModalOpen = true;
+  }
+
+  closeAddCategoryModal(): void {
+    this.isAddCategoryModalOpen = false;
+  }
+
+  saveNewCategory(): void {
+    if (this.addCategoryForm.valid) {
+      this.categoryService.addNewCategory(this.addCategoryForm.value).subscribe({
+        next: () => {
+          this.toastService.displaySuccessToast('Category added successfully');
+          this.closeAddCategoryModal();
+          this.loadAllCategories(); // Nach Hinzufügen Liste aktualisieren
+        },
+        error: error => {
+          this.toastService.displayWarningToast('Could not add category', error);
+        }
+      });
+    }
+  }
+
   // Modal-Operationen
   cancel(): void {
     this.modalCtrl.dismiss(null, 'cancel');
@@ -144,6 +174,7 @@ export default class ExpenseModalComponent implements ViewWillEnter, ViewDidEnte
         });
     });
   }
+
   delete(): void {
     this.actionSheetService
       .showDeletionConfirmation('Are you sure you want to delete this expense?')
@@ -160,17 +191,5 @@ export default class ExpenseModalComponent implements ViewWillEnter, ViewDidEnte
             error: error => this.toastService.displayWarningToast('Could not delete expense', error)
           });
       });
-  }
-  /// Methode zum Hinzufügen einer neuen Kategorie
-  addCategory(): void {
-    console.log('Add Category button clicked'); // Debugging
-    this.categoryService.addNewCategory({ name: 'New Category' }).subscribe({
-      next: () => {
-        console.log('Category added successfully');
-        this.toastService.displaySuccessToast('Category added successfully');
-        this.loadAllCategories(); // Nach dem Hinzufügen die Liste aktualisieren
-      },
-      error: error => this.toastService.displayWarningToast('Could not add category', error)
-    });
   }
 }
