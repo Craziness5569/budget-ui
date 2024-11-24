@@ -22,10 +22,11 @@ export class ToastService {
       buttons: [{ icon: 'close', role: 'cancel' }]
     });
 
-  displayWarningToast(message: string, error: HttpErrorResponse): void {
+  displayWarningToast(message: string, error?: HttpErrorResponse): void {
+    const errorMessage = error?.error?.message ? `. ${error.error.message}` : '';
     console.error(message, error);
     this.displayToast({
-      message: `${message}. ${error.error?.message || ''}`,
+      message: `${message}${errorMessage}`,
       duration: 3000,
       position: 'bottom',
       color: 'warning',

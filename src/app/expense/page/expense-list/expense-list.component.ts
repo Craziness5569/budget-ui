@@ -37,12 +37,15 @@ import { Category, Expense, ExpenseCriteria, SortOption } from '../../../shared/
 import { debounceTime, finalize } from 'rxjs/operators';
 import { InfiniteScrollCustomEvent, RefresherCustomEvent } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-expense-list',
   templateUrl: './expense-list.component.html',
   standalone: true,
   imports: [
+    CommonModule,
     ReactiveFormsModule,
     // Ionic
     IonHeader,
@@ -72,24 +75,28 @@ import { Subscription } from 'rxjs';
   ]
 })
 export default class ExpenseListComponent implements ViewDidEnter {
-  // DI
+  // Dependency Injection
   private readonly expenseService = inject(ExpenseService);
   private readonly modalCtrl = inject(ModalController);
   private readonly toastService = inject(ToastService);
   private readonly formBuilder = inject(NonNullableFormBuilder);
 
   expenses: Expense[] | null = null;
-  categories: Category[] | null = null; // Liste der Kategorien
+  categories: Category[] = []; // Kategorienliste initialisieren
   readonly initialSort = 'name,asc';
   lastPageReached = false;
   loading = false;
+
   searchCriteria: ExpenseCriteria = { page: 0, size: 25, sort: this.initialSort, categoryIds: [] };
+
   readonly searchForm = this.formBuilder.group({
     name: [''],
     sort: [this.initialSort],
     categoryIds: [[]] // Multiselect für Kategorie-IDs
   });
+
   private searchFormSubscription?: Subscription;
+
   readonly sortOptions: SortOption[] = [
     { label: 'Created at (newest first)', value: 'createdAt,desc' },
     { label: 'Created at (oldest first)', value: 'createdAt,asc' },
@@ -104,28 +111,9 @@ export default class ExpenseListComponent implements ViewDidEnter {
     addIcons({ swapVertical, search, alertCircleOutline, add });
   }
 
-  ngOnInit() {
-    this.loadCategories(); // Lade die Kategorien beim Initialisieren
-  }
-
-  loadCategories() {
-    // Beispiel-HTTP-Anfrage, um Kategorien zu laden
-    this.expenseService.getCategories().subscribe(categories => {
-      this.categories = categories;
-    });
-  }
-
-  async openModal(expense?: Expense): Promise<void> {
-    const modal = await this.modalCtrl.create({
-      component: ExpenseModalComponent,
-      componentProps: { expense: expense ?? {} }
-    });
-    modal.present();
-    const { role } = await modal.onWillDismiss();
-    if (role === 'refresh') this.reloadExpenses();
-  }
-
+  // Lädt Kategorien, wenn die Komponente initialisiert wird
   ionViewDidEnter(): void {
+    this.loadCategories();
     this.searchFormSubscription = this.searchForm.valueChanges.pipe(debounceTime(400)).subscribe(searchParams => {
       this.searchCriteria = { ...this.searchCriteria, ...searchParams, page: 0 };
       this.loadExpenses();
@@ -136,6 +124,28 @@ export default class ExpenseListComponent implements ViewDidEnter {
   ionViewDidLeave(): void {
     this.searchFormSubscription?.unsubscribe();
     this.searchFormSubscription = undefined;
+  }
+
+  private loadCategories(): void {
+    this.loading = true;
+    this.expenseService.getCategories().subscribe({
+      next: response => {
+        console.log('Loaded categories:', response);
+        if (response && Array.isArray(response.content)) {
+          this.categories = response.content; // Extrahiere nur `content`
+        } else {
+          console.error('Unexpected categories format:', response);
+          this.toastService.displayWarningToast('Failed to load categories');
+        }
+      },
+      error: (error: HttpErrorResponse) => {
+        console.error('Error loading categories:', error);
+        this.toastService.displayWarningToast('Failed to load categories', error);
+      },
+      complete: () => {
+        this.loading = false;
+      }
+    });
   }
 
   private loadExpenses(next?: () => void): void {
@@ -155,12 +165,27 @@ export default class ExpenseListComponent implements ViewDidEnter {
       )
       .subscribe({
         next: expenses => {
-          if (this.searchCriteria.page === 0 || !this.expenses) this.expenses = [];
+          if (this.searchCriteria.page === 0 || !this.expenses) {
+            this.expenses = [];
+          }
           this.expenses.push(...expenses.content);
           this.lastPageReached = expenses.last;
         },
-        error: error => this.toastService.displayWarningToast('Could not load expenses', error)
+        error: (error: HttpErrorResponse) => {
+          console.error('Error loading expenses:', error);
+          this.toastService.displayWarningToast('Could not load expenses');
+        }
       });
+  }
+
+  async openModal(expense?: Expense): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: ExpenseModalComponent,
+      componentProps: { expense: expense ?? {} }
+    });
+    modal.present();
+    const { role } = await modal.onWillDismiss();
+    if (role === 'refresh') this.reloadExpenses();
   }
 
   loadNextExpensesPage($event: InfiniteScrollCustomEvent) {

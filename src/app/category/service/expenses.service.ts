@@ -18,8 +18,8 @@ export class ExpenseService {
   }
 
   // Read Categories
-  getCategories(): Observable<Category[]> {
-    return this.httpClient.get<Category[]>(this.categoryApiUrl);
+  getCategories(): Observable<{ content: Category[] }> {
+    return this.httpClient.get<{ content: Category[] }>(this.categoryApiUrl);
   }
 
   // Upsert Expense (Create or Update)
