@@ -19,6 +19,12 @@ export class ExpenseService {
   upsertExpense = (expense: ExpenseUpsertDto): Observable<void> => this.httpClient.put<void>(this.apiUrl, expense);
 
   // Delete
-
   deleteExpense = (id: string): Observable<void> => this.httpClient.delete<void>(`${this.apiUrl}/${id}`);
+}
+@Injectable({ providedIn: 'root' })
+export class CategoryService {
+  private readonly httpClient = inject(HttpClient);
+
+  private readonly apiUrl = `${environment.backendUrl}/categories`;
+  private readonly apiV2Url = `${environment.backendUrl}/v2/categories`;
 }
