@@ -57,13 +57,14 @@ export interface AllCategoryCriteria extends SortCriteria {
 // -------
 
 export interface Expense {
-  id: string;
-  createdAt: string;
-  lastModifiedAt: string;
-  amount: number;
-  categories: string;
-  date: string;
+  id?: string;
   name: string;
+  amount: number;
+  date: string;
+  category?: {
+    id: string;
+    name: string;
+  }; // Category with ID and Name
 }
 
 export interface ExpenseUpsertDto {

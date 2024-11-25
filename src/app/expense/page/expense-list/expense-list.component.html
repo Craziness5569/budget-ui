@@ -33,25 +33,26 @@
         </ion-item>
       </ion-col>
       <ion-col size="12" size-sm="4">
-      <ion-item>
-        <ion-label></ion-label>
-        <ion-icon name="pricetag" slot="start"></ion-icon>
-        <ion-select
-          formControlName="categoryIds"
-          multiple="true"
-          placeholder="Category"
-        >
-          <ion-select-option *ngFor="let category of categories" [value]="category.id">
-            {{ category.name }}
-          </ion-select-option>
-        </ion-select>
-      </ion-item>
+        <ion-item>
+          <ion-label></ion-label>
+          <ion-icon name="pricetag" slot="start"></ion-icon>
+          <ion-select
+            formControlName="categoryIds"
+            multiple="true"
+            placeholder="Category"
+            interface="popover"
+          >
+            <ion-select-option *ngFor="let category of categories" [value]="category.id">
+              {{ category.name }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
       </ion-col>
       <ion-col size="12" size-sm="4">
-        <ion-item>
-          <ion-icon name="search" slot="start" />
-          <ion-input maxlength="40" placeholder="Search" [clearInput]="true" formControlName="name" />
-        </ion-item>
+      <ion-item>
+        <ion-icon name="search" slot="start" />
+        <ion-input maxlength="40" placeholder="Search" [clearInput]="true" formControlName="name" />
+      </ion-item>
       </ion-col>
     </ion-row>
   </ion-grid>

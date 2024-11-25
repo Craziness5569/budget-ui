@@ -1,6 +1,4 @@
-<!-- ------ -->
 <!-- Header -->
-<!-- ------ -->
 <ion-header>
   <ion-toolbar>
     <!-- Cancel Button -->
@@ -24,9 +22,7 @@
   </ion-toolbar>
 </ion-header>
 
-<!-- ------- -->
 <!-- Content -->
-<!-- ------- -->
 <ion-content class="ion-padding" [formGroup]="expenseForm">
   <!-- Name -->
   <ion-item>
@@ -83,56 +79,9 @@
   </ion-item>
 
   <!-- Delete Button -->
-  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+  <ion-fab *ngIf="expense.id" slot="fixed" vertical="bottom" horizontal="end">
     <ion-fab-button (click)="delete()" color="danger">
       <ion-icon name="trash"></ion-icon>
     </ion-fab-button>
   </ion-fab>
 </ion-content>
-
-<!-- ------ -->
-<!-- Add Category Modal -->
-<!-- ------ -->
-<ion-modal [isOpen]="isAddCategoryModalOpen" (ionModalDidDismiss)="closeAddCategoryModal()">
-  <ng-template>
-    <!-- Modal Header -->
-    <ion-header>
-      <ion-toolbar>
-        <!-- Cancel Button -->
-        <ion-buttons slot="start">
-          <ion-button (click)="closeAddCategoryModal()">
-            <ion-icon slot="start" name="close"></ion-icon>
-            Cancel
-          </ion-button>
-        </ion-buttons>
-
-        <!-- Title -->
-        <ion-title>Add Category</ion-title>
-
-        <!-- Save Button -->
-        <ion-buttons slot="end">
-          <ion-button
-            type="button"
-            [disabled]="addCategoryForm.invalid"
-            (click)="saveNewCategory()"
-          >
-            <ion-icon slot="start" name="save"></ion-icon>
-            Save
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
-
-    <!-- Modal Content -->
-    <ion-content class="ion-padding">
-      <!-- Eingabefeld für Kategorie -->
-      <form [formGroup]="addCategoryForm">
-        <ion-item>
-          <ion-icon slot="start" name="text"></ion-icon>
-          <ion-label position="stacked">Name</ion-label>
-          <ion-input formControlName="name" placeholder="Enter category name"></ion-input>
-        </ion-item>
-      </form>
-    </ion-content>
-  </ng-template>
-</ion-modal>

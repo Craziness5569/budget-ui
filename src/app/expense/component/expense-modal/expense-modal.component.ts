@@ -35,12 +35,14 @@ import { mergeMap, Subscription } from 'rxjs';
 import { ActionSheetService } from '../../../shared/service/action-sheet.service';
 import { formatISO, parseISO } from 'date-fns';
 import { CategoryService } from '../../../category/service/category.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-expense-modal',
   templateUrl: './expense-modal.component.html',
   standalone: true,
   imports: [
+    CommonModule,
     ReactiveFormsModule,
     // Ionic
     IonHeader,
@@ -111,8 +113,30 @@ export default class ExpenseModalComponent implements ViewWillEnter, ViewDidEnte
   }
 
   ionViewWillEnter(): void {
-    this.expenseForm.patchValue(this.expense);
-    this.loadAllCategories(); // Kategorien laden
+    const { id, amount, category, date, name } = this.expense;
+
+    // Safely set form values, fallback if category or fields are undefined
+    this.expenseForm.patchValue({
+      id,
+      amount,
+      categories: category?.id ?? '', // Use an empty string if category or ID is missing
+      date,
+      name
+    });
+
+    this.loadAllCategories(); // Load categories from the service
+
+    // Add the current category to the dropdown if it is not already included
+    if (category) {
+      const isCategoryIncluded = this.categories.some(cat => cat.id === category.id);
+      if (!isCategoryIncluded) {
+        this.categories.push({
+          ...category, // Existing fields
+          createdAt: new Date().toISOString(), // Placeholder value
+          lastModifiedAt: new Date().toISOString() // Placeholder value
+        } as Category);
+      }
+    }
   }
 
   // Methode zum Laden aller Kategorien
