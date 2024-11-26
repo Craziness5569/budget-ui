@@ -12,6 +12,8 @@ import {
   IonInfiniteScrollContent,
   IonInput,
   IonItem,
+  IonItemGroup,
+  IonItemDivider,
   IonLabel,
   IonList,
   IonMenuButton,
@@ -47,7 +49,6 @@ import { HttpErrorResponse } from '@angular/common/http';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    // Ionic
     IonHeader,
     IonToolbar,
     IonButtons,
@@ -62,6 +63,8 @@ import { HttpErrorResponse } from '@angular/common/http';
     IonCol,
     IonList,
     IonItem,
+    IonItemGroup,
+    IonItemDivider,
     IonIcon,
     IonSelect,
     IonSelectOption,
@@ -81,8 +84,10 @@ export default class ExpenseListComponent implements ViewDidEnter {
   private readonly toastService = inject(ToastService);
   private readonly formBuilder = inject(NonNullableFormBuilder);
 
-  expenses: Expense[] | null = null;
-  categories: Category[] = []; // Kategorienliste initialisieren
+  // Klassenvariablen
+  expenses: Expense[] | null = null; // Flache Liste von Ausgaben
+  expenseGroups: ExpenseGroup[] | null = null; // Gruppen von Ausgaben nach Datum
+  categories: Category[] = []; // Kategorienliste
   readonly initialSort = 'name,asc';
   lastPageReached = false;
   loading = false;
@@ -111,7 +116,6 @@ export default class ExpenseListComponent implements ViewDidEnter {
     addIcons({ swapVertical, search, alertCircleOutline, add });
   }
 
-  // Lädt Kategorien, wenn die Komponente initialisiert wird
   ionViewDidEnter(): void {
     this.loadCategories();
     this.searchFormSubscription = this.searchForm.valueChanges.pipe(debounceTime(400)).subscribe(searchParams => {
@@ -130,16 +134,13 @@ export default class ExpenseListComponent implements ViewDidEnter {
     this.loading = true;
     this.expenseService.getCategories().subscribe({
       next: response => {
-        console.log('Loaded categories:', response);
         if (response && Array.isArray(response.content)) {
-          this.categories = response.content; // Extrahiere nur `content`
+          this.categories = response.content;
         } else {
-          console.error('Unexpected categories format:', response);
           this.toastService.displayWarningToast('Failed to load categories');
         }
       },
       error: (error: HttpErrorResponse) => {
-        console.error('Error loading categories:', error);
         this.toastService.displayWarningToast('Failed to load categories', error);
       },
       complete: () => {
@@ -169,13 +170,28 @@ export default class ExpenseListComponent implements ViewDidEnter {
             this.expenses = [];
           }
           this.expenses.push(...expenses.content);
+          this.expenseGroups = this.groupExpensesByDate(this.expenses); // Gruppen von Ausgaben erstellen
           this.lastPageReached = expenses.last;
         },
-        error: (error: HttpErrorResponse) => {
-          console.error('Error loading expenses:', error);
-          this.toastService.displayWarningToast('Could not load expenses');
+        error: () => {
+          this.toastService.displayWarningToast('Failed to load categories');
         }
       });
+  }
+
+  private groupExpensesByDate(expenses: Expense[]): ExpenseGroup[] {
+    return expenses.reduce((groups, expense) => {
+      const date = expense.date; // Ersetze dies durch die tatsächliche Eigenschaft für das Datum
+      const group = groups.find(g => g.date === date);
+
+      if (group) {
+        group.expenses.push(expense);
+      } else {
+        groups.push({ date, expenses: [expense] });
+      }
+
+      return groups;
+    }, [] as ExpenseGroup[]);
   }
 
   async openModal(expense?: Expense): Promise<void> {
@@ -197,4 +213,9 @@ export default class ExpenseListComponent implements ViewDidEnter {
     this.searchCriteria.page = 0;
     this.loadExpenses(() => $event?.target.complete());
   }
+}
+
+interface ExpenseGroup {
+  date: string;
+  expenses: Expense[];
 }
