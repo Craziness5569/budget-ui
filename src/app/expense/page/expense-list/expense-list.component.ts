@@ -27,11 +27,12 @@ import {
   IonTitle,
   IonToolbar,
   ModalController,
-  ViewDidEnter
+  ViewDidEnter,
+  IonButton
 } from '@ionic/angular/standalone';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
-import { add, alertCircleOutline, search, swapVertical } from 'ionicons/icons';
+import { add, alertCircleOutline, search, swapVertical, chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 import ExpenseModalComponent from '../../../expense/component/expense-modal/expense-modal.component';
 import { ToastService } from '../../../shared/service/toast.service';
 import { ExpenseService } from '../../../category/service/expenses.service';
@@ -74,30 +75,31 @@ import { HttpErrorResponse } from '@angular/common/http';
     IonInfiniteScroll,
     IonInfiniteScrollContent,
     IonFab,
-    IonFabButton
+    IonFabButton,
+    IonButton
   ]
 })
 export default class ExpenseListComponent implements ViewDidEnter {
-  // Dependency Injection
   private readonly expenseService = inject(ExpenseService);
   private readonly modalCtrl = inject(ModalController);
   private readonly toastService = inject(ToastService);
   private readonly formBuilder = inject(NonNullableFormBuilder);
 
-  // Klassenvariablen
-  expenses: Expense[] | null = null; // Flache Liste von Ausgaben
-  expenseGroups: ExpenseGroup[] | null = null; // Gruppen von Ausgaben nach Datum
-  categories: Category[] = []; // Kategorienliste
+  expenses: Expense[] | null = null;
+  expenseGroups: ExpenseGroup[] | null = null;
+  categories: Category[] = [];
   readonly initialSort = 'name,asc';
   lastPageReached = false;
   loading = false;
+
+  currentMonth: Date = new Date(); // Variable für den aktuell ausgewählten Monat
 
   searchCriteria: ExpenseCriteria = { page: 0, size: 25, sort: this.initialSort, categoryIds: [] };
 
   readonly searchForm = this.formBuilder.group({
     name: [''],
     sort: [this.initialSort],
-    categoryIds: [[]] // Multiselect für Kategorie-IDs
+    categoryIds: [[]]
   });
 
   private searchFormSubscription?: Subscription;
@@ -112,8 +114,7 @@ export default class ExpenseListComponent implements ViewDidEnter {
   ];
 
   constructor() {
-    // Add all used Ionic icons
-    addIcons({ swapVertical, search, alertCircleOutline, add });
+    addIcons({ swapVertical, search, alertCircleOutline, add, chevronBackOutline, chevronForwardOutline });
   }
 
   ionViewDidEnter(): void {
@@ -150,12 +151,12 @@ export default class ExpenseListComponent implements ViewDidEnter {
   }
 
   private loadExpenses(next?: () => void): void {
-    if (!this.searchCriteria.name) delete this.searchCriteria.name;
-    if (!this.searchCriteria.categoryIds || this.searchCriteria.categoryIds.length === 0) {
-      delete this.searchCriteria.categoryIds;
-    }
+    this.searchCriteria = {
+      ...this.searchCriteria,
+      dateFrom: new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth(), 1).toISOString(),
+      dateTo: new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() + 1, 0).toISOString()
+    } as ExpenseCriteria; // Typ-Cast
 
-    this.loading = true;
     this.expenseService
       .getExpenses(this.searchCriteria)
       .pipe(
@@ -166,32 +167,45 @@ export default class ExpenseListComponent implements ViewDidEnter {
       )
       .subscribe({
         next: expenses => {
-          if (this.searchCriteria.page === 0 || !this.expenses) {
-            this.expenses = [];
-          }
-          this.expenses.push(...expenses.content);
-          this.expenseGroups = this.groupExpensesByDate(this.expenses); // Gruppen von Ausgaben erstellen
+          this.expenses = expenses.content;
+          this.expenseGroups = this.groupExpensesByDate(this.expenses);
           this.lastPageReached = expenses.last;
         },
         error: () => {
-          this.toastService.displayWarningToast('Failed to load categories');
+          this.toastService.displayWarningToast('Failed to load expenses');
         }
       });
   }
 
   private groupExpensesByDate(expenses: Expense[]): ExpenseGroup[] {
     return expenses.reduce((groups, expense) => {
-      const date = expense.date; // Ersetze dies durch die tatsächliche Eigenschaft für das Datum
-      const group = groups.find(g => g.date === date);
+      const date = new Date(expense.date);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+      const group = groups.find(g => g.date === monthKey);
 
       if (group) {
         group.expenses.push(expense);
       } else {
-        groups.push({ date, expenses: [expense] });
+        groups.push({ date: monthKey, expenses: [expense] });
       }
 
       return groups;
     }, [] as ExpenseGroup[]);
+  }
+
+  private addMonths(date: Date, months: number): Date {
+    const newDate = new Date(date);
+    newDate.setMonth(newDate.getMonth() + months);
+    if (newDate.getDate() < date.getDate()) {
+      newDate.setDate(0);
+    }
+    return newDate;
+  }
+
+  changeMonth(monthDelta: number): void {
+    this.currentMonth = this.addMonths(this.currentMonth, monthDelta);
+    this.loadExpenses();
   }
 
   async openModal(expense?: Expense): Promise<void> {
@@ -201,16 +215,13 @@ export default class ExpenseListComponent implements ViewDidEnter {
     });
     modal.present();
     const { role } = await modal.onWillDismiss();
-    if (role === 'refresh') this.reloadExpenses();
+    if (role === 'refresh') this.loadExpenses();
   }
-
-  loadNextExpensesPage($event: InfiniteScrollCustomEvent) {
-    this.searchCriteria.page++;
-    this.loadExpenses(() => $event.target.complete());
+  loadNextExpensesPage($event: InfiniteScrollCustomEvent): void {
+    this.searchCriteria.page++; // Nächste Seite laden
+    this.loadExpenses(() => $event.target.complete()); // Daten laden und Infinite Scroll beenden
   }
-
   reloadExpenses($event?: RefresherCustomEvent): void {
-    this.searchCriteria.page = 0;
     this.loadExpenses(() => $event?.target.complete());
   }
 }

@@ -104,12 +104,7 @@
     </ion-row>
   </ion-grid>
 
-  <!-- Create Button -->
-  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button (click)="openModal()">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+
 
   <!-- Infinite Scroll -->
   <ion-infinite-scroll
@@ -127,4 +122,38 @@
   >
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
+<!-- Month Navigation at the Bottom -->
+  <!-- Sticky Month Navigation Bar -->
+  <div
+    style="display: flex; align-items: center; margin: 1rem; position: sticky; bottom: 0; background: white; z-index: 1000; padding: 0.5rem;"
+  >
+    <!-- Left Arrow -->
+    <ion-icon
+      name="chevron-back-outline"
+      style="font-size: 1.5rem; cursor: pointer; margin-right: 1rem; visibility: visible;"
+      (click)="changeMonth(-1)"
+    ></ion-icon>
+
+    <!-- Month (Left Aligned and Not Bold) -->
+    <span
+      style="font-size: 1.2rem; text-align: left;"
+    >
+    {{ currentMonth | date: 'MMMM yyyy' }}
+  </span>
+
+    <!-- Right Arrow -->
+    <ion-icon
+      name="chevron-forward-outline"
+      style="font-size: 1.5rem; cursor: pointer; margin-left: auto;"
+      (click)="changeMonth(1)"
+    ></ion-icon>
+  </div>
+
+  <!-- Floating create Action Button (FAB) -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" style="margin-bottom: 3rem;">
+    <ion-fab-button (click)="openModal()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
 </ion-content>

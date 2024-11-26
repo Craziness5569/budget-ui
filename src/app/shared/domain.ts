@@ -80,6 +80,7 @@ export interface ExpenseCriteria extends PagingCriteria {
   name?: string;
   yearMonth?: string;
 }
+
 export interface AllExpenseCriteria extends SortCriteria {
   name?: string;
 }
