@@ -151,12 +151,18 @@ export default class ExpenseListComponent implements ViewDidEnter {
   }
 
   private loadExpenses(next?: () => void): void {
+    // Calculate the start and end of the current month
+    const dateFrom = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth(), 1).toISOString();
+    const dateTo = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() + 1, 0, 23, 59, 59).toISOString();
+
+    // Update search criteria
     this.searchCriteria = {
       ...this.searchCriteria,
-      dateFrom: new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth(), 1).toISOString(),
-      dateTo: new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() + 1, 0).toISOString()
-    } as ExpenseCriteria; // Typ-Cast
+      dateFrom, // Include dateFrom in the criteria
+      dateTo // Include dateTo in the criteria
+    };
 
+    // Fetch expenses from the service
     this.expenseService
       .getExpenses(this.searchCriteria)
       .pipe(
@@ -167,7 +173,14 @@ export default class ExpenseListComponent implements ViewDidEnter {
       )
       .subscribe({
         next: expenses => {
-          this.expenses = expenses.content;
+          // Filter only the expenses within the current month
+          const filteredExpenses = expenses.content.filter(expense => {
+            const expenseDate = new Date(expense.date);
+            return expenseDate >= new Date(dateFrom) && expenseDate <= new Date(dateTo);
+          });
+
+          // Update state with filtered expenses
+          this.expenses = filteredExpenses;
           this.expenseGroups = this.groupExpensesByDate(this.expenses);
           this.lastPageReached = expenses.last;
         },
@@ -180,14 +193,14 @@ export default class ExpenseListComponent implements ViewDidEnter {
   private groupExpensesByDate(expenses: Expense[]): ExpenseGroup[] {
     return expenses.reduce((groups, expense) => {
       const date = new Date(expense.date);
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const dayKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
-      const group = groups.find(g => g.date === monthKey);
+      const group = groups.find(g => g.date === dayKey);
 
       if (group) {
         group.expenses.push(expense);
       } else {
-        groups.push({ date: monthKey, expenses: [expense] });
+        groups.push({ date: dayKey, expenses: [expense] });
       }
 
       return groups;

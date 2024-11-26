@@ -79,6 +79,8 @@ export interface ExpenseCriteria extends PagingCriteria {
   categoryIds?: string[];
   name?: string;
   yearMonth?: string;
+  dateFrom?: string; // Add dateFrom
+  dateTo?: string; // Add dateTo
 }
 
 export interface AllExpenseCriteria extends SortCriteria {
