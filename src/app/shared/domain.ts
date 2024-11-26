@@ -36,6 +36,7 @@ export interface Category {
   lastModifiedAt: string;
   color?: string;
   name: string;
+  categoryId?: string;
 }
 
 export interface CategoryUpsertDto {

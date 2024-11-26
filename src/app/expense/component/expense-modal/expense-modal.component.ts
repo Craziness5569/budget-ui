@@ -183,10 +183,14 @@ export default class ExpenseModalComponent implements ViewWillEnter, ViewDidEnte
   }
 
   save(): void {
+    if (this.expenseForm.invalid) return;
+
     this.loadingIndicatorService.showLoadingIndicator({ message: 'Saving expense' }).subscribe(loadingIndicator => {
+      // Prepare the payload
       const expense = {
         ...this.expenseForm.value,
-        date: formatISO(parseISO(this.expenseForm.value.date!), { representation: 'date' }) // Datum korrekt formatieren
+        categoryId: this.expenseForm.value.categories, // Map 'categories' to 'categoryId'
+        date: formatISO(parseISO(this.expenseForm.value.date!), { representation: 'date' }) // Format the date
       } as ExpenseUpsertDto;
 
       this.expenseService
@@ -197,7 +201,9 @@ export default class ExpenseModalComponent implements ViewWillEnter, ViewDidEnte
             this.toastService.displaySuccessToast('Expense saved');
             this.modalCtrl.dismiss(null, 'refresh');
           },
-          error: error => this.toastService.displayWarningToast('Could not save expense', error)
+          error: error => {
+            this.toastService.displayWarningToast('Could not save expense', error);
+          }
         });
     });
   }
