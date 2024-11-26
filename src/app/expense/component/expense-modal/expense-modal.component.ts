@@ -36,6 +36,7 @@ import { ActionSheetService } from '../../../shared/service/action-sheet.service
 import { formatISO, parseISO } from 'date-fns';
 import { CategoryService } from '../../../category/service/category.service';
 import { CommonModule } from '@angular/common';
+import CategoryModalComponent from '../../../category/component/category-modal/category-modal.component';
 
 @Component({
   selector: 'app-expense-modal',
@@ -89,7 +90,6 @@ export default class ExpenseModalComponent implements ViewWillEnter, ViewDidEnte
   readonly addCategoryForm = this.formBuilder.group({
     name: ['', [Validators.required, Validators.minLength(3)]]
   });
-
   @ViewChild('nameInput') nameInput?: IonInput;
   @Input() expense: Expense = {} as Expense;
   private searchFormSubscription?: Subscription;
@@ -151,8 +151,11 @@ export default class ExpenseModalComponent implements ViewWillEnter, ViewDidEnte
   }
 
   // Modal-Operationen für das Hinzufügen einer Kategorie
-  openAddCategoryModal(): void {
-    this.isAddCategoryModalOpen = true;
+  async showCategoryModal(): Promise<void> {
+    const categoryModal = await this.modalCtrl.create({ component: CategoryModalComponent });
+    categoryModal.present();
+    const { role } = await categoryModal.onWillDismiss();
+    console.log('role', role);
   }
 
   closeAddCategoryModal(): void {

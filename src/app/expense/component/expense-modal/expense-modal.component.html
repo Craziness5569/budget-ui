@@ -41,14 +41,12 @@
     <ion-icon name="pricetag" slot="start"></ion-icon>
     <ion-select formControlName="categories" placeholder="Select Category">
       <!-- Dynamische Kategorien -->
-      @for (category of categories; track category.id) {
-        <ion-select-option [value]="category.id">
-          {{ category.name }}
-        </ion-select-option>
-      }
+      <ion-select-option *ngFor="let category of categories" [value]="category.id">
+        {{ category.name }}
+      </ion-select-option>
     </ion-select>
     <!-- Add Category Button -->
-    <ion-button (click)="openAddCategoryModal()">
+    <ion-button (click)="showCategoryModal()">
       <ion-icon slot="icon-only" name="add"></ion-icon>
     </ion-button>
   </ion-item>
@@ -84,4 +82,6 @@
       <ion-icon name="trash"></ion-icon>
     </ion-fab-button>
   </ion-fab>
+
+
 </ion-content>
