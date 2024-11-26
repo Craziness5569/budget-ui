@@ -42,6 +42,7 @@ import { InfiniteScrollCustomEvent, RefresherCustomEvent } from '@ionic/angular'
 import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
+import { CategoryService } from '../../../category/service/category.service';
 
 @Component({
   selector: 'app-expense-list',
@@ -81,6 +82,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 })
 export default class ExpenseListComponent implements ViewDidEnter {
   private readonly expenseService = inject(ExpenseService);
+  private readonly categoryService = inject(CategoryService);
   private readonly modalCtrl = inject(ModalController);
   private readonly toastService = inject(ToastService);
   private readonly formBuilder = inject(NonNullableFormBuilder);
@@ -133,13 +135,10 @@ export default class ExpenseListComponent implements ViewDidEnter {
 
   private loadCategories(): void {
     this.loading = true;
-    this.expenseService.getCategories().subscribe({
-      next: response => {
-        if (response && Array.isArray(response.content)) {
-          this.categories = response.content;
-        } else {
-          this.toastService.displayWarningToast('Failed to load categories');
-        }
+    this.categoryService.getAllCategories({ sort: 'name,asc' }).subscribe({
+      next: categories => {
+        console.log('Categories loaded:', categories);
+        this.categories = categories;
       },
       error: (error: HttpErrorResponse) => {
         this.toastService.displayWarningToast('Failed to load categories', error);
@@ -226,10 +225,17 @@ export default class ExpenseListComponent implements ViewDidEnter {
       component: ExpenseModalComponent,
       componentProps: { expense: expense ?? {} }
     });
-    modal.present();
+
+    await modal.present();
+
     const { role } = await modal.onWillDismiss();
-    if (role === 'refresh') this.loadExpenses();
+
+    if (role === 'refresh') {
+      this.loadExpenses(); // Aktualisiert die Ausgaben
+      this.loadCategories(); // Aktualisiert die Kategorien
+    }
   }
+
   loadNextExpensesPage($event: InfiniteScrollCustomEvent): void {
     this.searchCriteria.page++; // Nächste Seite laden
     this.loadExpenses(() => $event.target.complete()); // Daten laden und Infinite Scroll beenden

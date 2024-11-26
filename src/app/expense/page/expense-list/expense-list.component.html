@@ -40,6 +40,7 @@
             multiple="true"
             placeholder="Category"
             interface="popover"
+            style="max-height: 300px; overflow-y: auto;"
           >
             @for (category of categories; track category.id) {
               <ion-select-option [value]="category.id">
