@@ -99,6 +99,7 @@
                   <ion-item button="true" [detail]="true" (click)="openModal(expense)">
                     <!-- Expense Name -->
                     <ion-label> {{ expense.name }} </ion-label>
+                    <ion-label> {{ expense.category?.name || '' }}  </ion-label>
 
                     <!-- Expense Amount aligned to the right -->
                     <ion-label slot="end" style="text-align: right;">
