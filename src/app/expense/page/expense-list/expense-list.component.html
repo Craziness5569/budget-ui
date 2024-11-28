@@ -97,14 +97,26 @@
                 <!-- Iterate over Expenses in the Group -->
                 @for (expense of expenseGroup.expenses; track expense.id) {
                   <ion-item button="true" [detail]="true" (click)="openModal(expense)">
-                    <!-- Expense Name -->
-                    <ion-label> {{ expense.name }} </ion-label>
-                    <ion-label> {{ expense.category?.name || '' }}  </ion-label>
+                    <ion-grid>
+                      <ion-row>
+                        <!-- Expense Name -->
+                        <ion-col size="6">
+                          <ion-label> {{ expense.name }} </ion-label>
+                        </ion-col>
 
-                    <!-- Expense Amount aligned to the right -->
-                    <ion-label slot="end" style="text-align: right;">
-                      CHF {{ expense.amount | number:'1.2-2' }} <!-- Format to 2 decimal places -->
-                    </ion-label>
+                        <!-- Expense Category -->
+                        <ion-col size="3" style="text-align: left;">
+                          <ion-label> {{ expense.category?.name || '' }} </ion-label>
+                        </ion-col>
+
+                        <!-- Expense Amount aligned to the right -->
+                        <ion-col size="3" style="text-align: right;">
+                          <ion-label>
+                            CHF {{ expense.amount | number:'1.2-2' }} <!-- Format to 2 decimal places -->
+                          </ion-label>
+                        </ion-col>
+                      </ion-row>
+                    </ion-grid>
                   </ion-item>
                 }
               </ion-item-group>
@@ -114,6 +126,7 @@
       </ion-col>
     </ion-row>
   </ion-grid>
+
 
 
 
