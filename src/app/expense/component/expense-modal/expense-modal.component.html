@@ -10,7 +10,7 @@
     </ion-buttons>
 
     <!-- Title -->
-    <ion-title>{{ expense.id ? 'Edit' : 'Add' }} Expense</ion-title>
+    <ion-title>{{ expense.id ? "Edit" : "Add" }} Expense</ion-title>
 
     <!-- Save Button -->
     <ion-buttons slot="end">
@@ -27,13 +27,7 @@
   <!-- Name -->
   <ion-item>
     <ion-icon name="text" slot="start"></ion-icon>
-    <ion-input
-      #nameInput
-      formControlName="name"
-      maxlength="40"
-      placeholder="Name"
-      required="true"
-    ></ion-input>
+    <ion-input #nameInput formControlName="name" maxlength="40" placeholder="Name" required="true"></ion-input>
   </ion-item>
 
   <!-- Kategorie -->
@@ -54,26 +48,28 @@
   <!-- Betrag -->
   <ion-item>
     <ion-icon name="cash" slot="start"></ion-icon>
-    <div style="display: flex; align-items: center; position: relative; width: 100%;">
+    <div style="display: flex; align-items: center; position: relative; width: 100%">
       <ion-input
         formControlName="amount"
         type="number"
         placeholder="Amount"
         required="true"
-        style="flex: 1; padding-right: 50px;"
+        style="flex: 1; padding-right: 50px"
       ></ion-input>
-      <span
-        style="position: absolute; right: 0; color: #666; font-size: 14px; pointer-events: none;"
-      >
-        CHF
-      </span>
+      <span style="position: absolute; right: 0; color: #666; font-size: 14px; pointer-events: none"> CHF </span>
     </div>
   </ion-item>
 
   <!-- Datum -->
   <ion-item>
     <ion-icon name="calendar" slot="start"></ion-icon>
-    <ion-datetime formControlName="date" presentation="date"></ion-datetime>
+    <!-- Datums-Button für Auswahl -->
+    <ion-datetime-button datetime="datetime"></ion-datetime-button>
+    <ion-modal keepContentsMounted="true">
+      <ng-template>
+        <ion-datetime id="datetime" formControlName="date" presentation="date" [value]="expenseForm.get('date')?.value"></ion-datetime>
+      </ng-template>
+    </ion-modal>
   </ion-item>
 
   <!-- Delete Button -->
@@ -82,6 +78,4 @@
       <ion-icon name="trash"></ion-icon>
     </ion-fab-button>
   </ion-fab>
-
-
 </ion-content>
