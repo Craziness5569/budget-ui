@@ -65,7 +65,7 @@
     <ion-icon name="calendar" slot="start"></ion-icon>
     <!-- Datums-Button für Auswahl -->
     <ion-datetime-button datetime="datetime"></ion-datetime-button>
-    <ion-modal keepContentsMounted="true">
+    <ion-modal [keepContentsMounted]="true">
       <ng-template>
         <ion-datetime id="datetime" formControlName="date" presentation="date" [value]="expenseForm.get('date')?.value"></ion-datetime>
       </ng-template>
