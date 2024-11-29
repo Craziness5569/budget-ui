@@ -30,7 +30,7 @@ import { ToastService } from '../../../shared/service/toast.service';
 import { ExpenseService } from '../../../category/service/expenses.service';
 import { LoadingIndicatorService } from '../../../shared/service/loading-indicator.service';
 import { finalize } from 'rxjs/operators';
-import { Category, Expense, ExpenseUpsertDto, SortOption } from '../../../shared/domain';
+import { Category, CategoryUpsertDto, Expense, ExpenseUpsertDto, SortOption } from '../../../shared/domain';
 import { mergeMap, Subscription } from 'rxjs';
 import { ActionSheetService } from '../../../shared/service/action-sheet.service';
 import { formatISO, parseISO } from 'date-fns';
@@ -153,9 +153,12 @@ export default class ExpenseModalComponent implements ViewWillEnter, ViewDidEnte
   // Modal-Operationen für das Hinzufügen einer Kategorie
   async showCategoryModal(): Promise<void> {
     const categoryModal = await this.modalCtrl.create({ component: CategoryModalComponent });
-    categoryModal.present();
+    await categoryModal.present();
+
     const { role } = await categoryModal.onWillDismiss();
-    console.log('role', role);
+    if (role === 'refresh') {
+      this.loadAllCategories(); // Aktualisiere die Kategorienliste, wenn das Modal mit 'refresh' geschlossen wird
+    }
   }
 
   closeAddCategoryModal(): void {
