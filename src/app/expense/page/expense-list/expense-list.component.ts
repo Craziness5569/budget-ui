@@ -37,12 +37,14 @@ import ExpenseModalComponent from '../../../expense/component/expense-modal/expe
 import { ToastService } from '../../../shared/service/toast.service';
 import { ExpenseService } from '../../../category/service/expenses.service';
 import { Category, Expense, ExpenseCriteria, SortOption } from '../../../shared/domain';
-import { debounceTime, finalize } from 'rxjs/operators';
+import { debounceTime, finalize, groupBy, toArray } from 'rxjs/operators';
 import { InfiniteScrollCustomEvent, RefresherCustomEvent } from '@ionic/angular';
-import { Subscription } from 'rxjs';
+import { from, mergeMap, Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CategoryService } from '../../../category/service/category.service';
+import { formatPeriod } from '../../../shared/period';
+import { set } from 'date-fns'; // Importing set from date-fns
 
 @Component({
   selector: 'app-expense-list',
@@ -87,13 +89,13 @@ export default class ExpenseListComponent implements ViewDidEnter {
   private readonly toastService = inject(ToastService);
   private readonly formBuilder = inject(NonNullableFormBuilder);
 
-  expenses: Expense[] | null = null;
   expenseGroups: ExpenseGroup[] | null = null;
   categories: Category[] = [];
   readonly initialSort = 'name,asc';
   lastPageReached = false;
   loading = false;
 
+  date = set(new Date(), { date: 1 }); // Correctly sets the day of the month to the 1st
   currentMonth: Date = new Date(); // Variable für den aktuell ausgewählten Monat
 
   searchCriteria: ExpenseCriteria = { page: 0, size: 25, sort: this.initialSort, categoryIds: [] };
@@ -149,45 +151,41 @@ export default class ExpenseListComponent implements ViewDidEnter {
     });
   }
 
-  private loadExpenses(next?: () => void): void {
-    // Calculate the start and end of the current month
-    const dateFrom = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth(), 1).toISOString();
-    const dateTo = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() + 1, 0, 23, 59, 59).toISOString();
-
-    // Update search criteria
-    this.searchCriteria = {
-      ...this.searchCriteria,
-      dateFrom, // Include dateFrom in the criteria
-      dateTo // Include dateTo in the criteria
-    };
-
-    // Fetch expenses from the service
+  private loadExpenses(next: () => void = () => {}): void {
+    this.searchCriteria.yearMonth = formatPeriod(this.date);
+    if (!this.searchCriteria.categoryIds?.length) delete this.searchCriteria.categoryIds;
+    if (!this.searchCriteria.name) delete this.searchCriteria.name;
+    this.loading = true;
+    const groupByDate = this.searchCriteria.sort.startsWith('date');
     this.expenseService
       .getExpenses(this.searchCriteria)
       .pipe(
-        finalize(() => {
-          this.loading = false;
-          if (next) next();
+        finalize(() => (this.loading = false)),
+        mergeMap(expensePage => {
+          this.lastPageReached = expensePage.last;
+          next();
+          if (this.searchCriteria.page === 0 || !this.expenseGroups) this.expenseGroups = [];
+          return from(expensePage.content).pipe(
+            groupBy(expense => (groupByDate ? expense.date : expense.id)),
+            mergeMap(group => group.pipe(toArray()))
+          );
         })
       )
       .subscribe({
-        next: expenses => {
-          // Filter only the expenses within the current month
-          const filteredExpenses = expenses.content.filter(expense => {
-            const expenseDate = new Date(expense.date);
-            return expenseDate >= new Date(dateFrom) && expenseDate <= new Date(dateTo);
-          });
-
-          // Update state with filtered expenses
-          this.expenses = filteredExpenses;
-          this.expenseGroups = this.groupExpensesByDate(this.expenses);
-          this.lastPageReached = expenses.last;
+        next: (expenses: Expense[]) => {
+          const expenseGroup: ExpenseGroup = {
+            date: expenses[0].date,
+            expenses: this.sortExpenses(expenses)
+          };
+          const expenseGroupWithSameDate = this.expenseGroups!.find(other => other.date === expenseGroup.date);
+          if (!expenseGroupWithSameDate || !groupByDate) this.expenseGroups!.push(expenseGroup);
+          else expenseGroupWithSameDate.expenses = this.sortExpenses([...expenseGroupWithSameDate.expenses, ...expenseGroup.expenses]);
         },
-        error: () => {
-          this.toastService.displayWarningToast('Failed to load expenses');
-        }
+        error: error => this.toastService.displayWarningToast('Could not load expenses', error)
       });
   }
+
+  private sortExpenses = (expenses: Expense[]): Expense[] => expenses.sort((a, b) => a.name.localeCompare(b.name));
 
   private groupExpensesByDate(expenses: Expense[]): ExpenseGroup[] {
     return expenses.reduce((groups, expense) => {
