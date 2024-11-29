@@ -160,26 +160,6 @@ export default class ExpenseModalComponent implements ViewWillEnter, ViewDidEnte
       this.loadAllCategories(); // Aktualisiere die Kategorienliste, wenn das Modal mit 'refresh' geschlossen wird
     }
   }
-
-  closeAddCategoryModal(): void {
-    this.isAddCategoryModalOpen = false;
-  }
-
-  saveNewCategory(): void {
-    if (this.addCategoryForm.valid) {
-      this.categoryService.addNewCategory(this.addCategoryForm.value).subscribe({
-        next: () => {
-          this.toastService.displaySuccessToast('Category added successfully');
-          this.closeAddCategoryModal();
-          this.loadAllCategories(); // Nach Hinzufügen Liste aktualisieren
-        },
-        error: error => {
-          this.toastService.displayWarningToast('Could not add category', error);
-        }
-      });
-    }
-  }
-
   // Modal-Operationen
   cancel(): void {
     this.modalCtrl.dismiss(null, 'cancel');
@@ -192,7 +172,7 @@ export default class ExpenseModalComponent implements ViewWillEnter, ViewDidEnte
       // Prepare the payload
       const expense = {
         ...this.expenseForm.value,
-        categoryId: this.expenseForm.value.categories, // Map 'categories' to 'categoryId'
+        categoryId: this.expenseForm.value.categories || null, // Map 'categories' to 'categoryId'
         date: formatISO(parseISO(this.expenseForm.value.date!), { representation: 'date' }) // Format the date
       } as ExpenseUpsertDto;
 
