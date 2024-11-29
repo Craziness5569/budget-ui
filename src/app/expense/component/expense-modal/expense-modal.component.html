@@ -34,6 +34,8 @@
   <ion-item>
     <ion-icon name="pricetag" slot="start"></ion-icon>
     <ion-select formControlName="categories" placeholder="Select Category">
+      <!-- Leere Option, die ausgewählt werden kann -->
+      <ion-select-option [value]="''"></ion-select-option>
       <!-- Dynamische Kategorien -->
       <ion-select-option *ngFor="let category of categories" [value]="category.id">
         {{ category.name }}
