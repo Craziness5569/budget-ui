@@ -215,6 +215,7 @@ export default class ExpenseListComponent implements ViewDidEnter {
 
   changeMonth(monthDelta: number): void {
     this.currentMonth = this.addMonths(this.currentMonth, monthDelta);
+    this.date = set(this.currentMonth, { date: 1 });
     this.loadExpenses();
   }
 
