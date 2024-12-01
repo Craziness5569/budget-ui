@@ -62,6 +62,7 @@ export interface Expense {
   name: string;
   amount: number;
   date: string;
+  createdAt: string;
   category?: {
     id: string;
     name: string;
