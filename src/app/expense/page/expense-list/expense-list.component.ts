@@ -149,6 +149,7 @@ export default class ExpenseListComponent implements ViewDidEnter {
       }
     });
   }
+
   changeMonth(monthDelta: number): void {
     this.currentMonth = this.addMonths(this.currentMonth, monthDelta);
     this.date = set(this.currentMonth, { date: 1 });
@@ -223,6 +224,7 @@ export default class ExpenseListComponent implements ViewDidEnter {
         return expenses;
     }
   };
+
   private addMonths(date: Date, months: number): Date {
     const newDate = new Date(date);
     newDate.setMonth(newDate.getMonth() + months);
@@ -231,6 +233,7 @@ export default class ExpenseListComponent implements ViewDidEnter {
     }
     return newDate;
   }
+
   async openModal(expense?: Expense): Promise<void> {
     const modal = await this.modalCtrl.create({
       component: ExpenseModalComponent,
@@ -248,8 +251,12 @@ export default class ExpenseListComponent implements ViewDidEnter {
   }
 
   loadNextExpensesPage($event: InfiniteScrollCustomEvent): void {
-    this.searchCriteria.page++;
-    this.loadExpenses(() => $event.target.complete());
+    if (!this.lastPageReached && !this.loading) {
+      this.searchCriteria.page++;
+      this.loadExpenses(() => $event.target.complete());
+    } else {
+      $event.target.complete();
+    }
   }
 
   reloadExpenses($event?: RefresherCustomEvent): void {

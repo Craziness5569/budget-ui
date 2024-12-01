@@ -142,24 +142,22 @@
       box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
     "
   >
-    <!-- Left Arrow -->
     <ion-icon
       name="chevron-back-outline"
-      style="font-size: 1.5rem; cursor: pointer; margin-right: 1rem; visibility: visible"
+      style="font-size: 1.5rem; cursor: pointer; margin-right: 1rem;"
       (click)="changeMonth(-1)"
     ></ion-icon>
 
-    <!-- Month (Left Aligned and Not Bold) -->
-    <span style="font-size: 1.2rem; text-align: left">
-      {{ currentMonth | date: "MMMM yyyy" }}
-    </span>
-
-    <!-- Right Arrow -->
+    <!-- Vorwärts-Button -->
     <ion-icon
       name="chevron-forward-outline"
-      style="font-size: 1.5rem; cursor: pointer; margin-left: auto"
+      style="font-size: 1.5rem; cursor: pointer;"
       (click)="changeMonth(1)"
     ></ion-icon>
+    <span style="font-size: 1.2rem; text-align: left">
+  {{ currentMonth | date: "MMMM yyyy" }}
+</span>
+
   </div>
 
   <!-- Floating create Action Button (FAB) -->
